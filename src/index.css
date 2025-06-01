@@ -1,0 +1,102 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #ffffff;
+    --foreground: #0a0a0b;
+    --card: #ffffff;
+    --card-foreground: #1f1f23;
+    --popover: #ffffff;
+    --popover-foreground: #1f1f1f;
+    --primary: #103c39;
+    --primary-foreground: #e3f1f0;
+    --secondary: #f5f5f5;
+    --secondary-foreground: #1f1f1f;
+    --muted: #f5f5f5;
+    --muted-foreground: #757575;
+    --accent: #e3f1f0;
+    --accent-foreground: #1f1f1f;
+    --destructive: #dc2626;
+    --destructive-foreground: #ffffff;
+    --border: #e5e7eb;
+    --input: #e5e7eb;
+    --ring: #103c39;
+    
+    --apartment: #103c39;
+    --apartment-light: #e3f1f0;
+    --apartment-dark: #0a2422;
+    --accent: #e3f1f0;
+    --accent-light: #f5f5f5;
+    --accent-dark: #374151;
+  }
+
+  .dark {
+    --background: #1f1f23;
+    --foreground: #e3f1f0;
+    --card: #1f1f23;
+    --card-foreground: #e3f1f0;
+    --popover: #1f1f23;
+    --popover-foreground: #e3f1f0;
+    --primary: #e5e7eb;
+    --primary-foreground: #1f1f23;
+    --secondary: #3f3f46;
+    --secondary-foreground: #e3f1f0;
+    --muted: #3f3f46;
+    --muted-foreground: #a8a29e;
+    --accent: #3f3f46;
+    --accent-foreground: #e3f1f0;
+    --destructive: #b91c1c;
+    --destructive-foreground: #ffffff;
+    --border: #374151;
+    --input: #4b5563;
+    --ring: #8b5cf6;
+    
+    --apartment: #e5e7eb;
+    --apartment-light: #8b5cf6;
+    --apartment-dark: #3f3f46;
+    --accent: #3f3f46;
+    --accent-light: #4b5563;
+    --accent-dark: #374151;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "ss01", "ss02", "cv01", "cv02", "cv03";
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hidden {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+  }
+
+  .glass-effect {
+    @apply backdrop-blur-lg bg-white/40 dark:bg-black/40 border border-white/20 dark:border-white/10;
+  }
+  
+  .text-gradient {
+    @apply bg-gradient-to-br from-apartment to-apartment-light bg-clip-text text-transparent dark:from-apartment-light dark:to-apartment;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+  }
+}
