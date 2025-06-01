@@ -1,0 +1,236 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+/* Dark mode overrides */
+.dark body {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+.dark .text-gradient {
+  background: linear-gradient(to right, var(--apartment-light), var(--apartment));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Ensure inputs in dark mode have proper styling */
+.dark input, 
+.dark textarea, 
+.dark select {
+  background-color: var(--background);
+  color: var(--foreground);
+  border-color: var(--border);
+}
+
+/* Ensure apartment cards look good in dark mode */
+.dark .apartment-card {
+  background-color: var(--card);
+  border-color: var(--border);
+}
+
+/* Fix modal styling in dark mode */
+.dark .modal-content {
+  background-color: var(--background);
+  color: var(--foreground);
+  border-color: var(--border);
+}
+
+/* Ensure all buttons have proper contrast in dark mode */
+.dark button {
+  color: inherit;
+}
+
+/* Button text color fixes for dark mode - improve visibility */
+.dark .btn-primary,
+.dark [variant="default"],
+.dark button[class*="bg-primary"] {
+  color: var(--primary-foreground);
+  background-color: var(--primary);
+}
+
+/* Fix visibility for all buttons in dark mode */
+.dark button[variant="default"],
+.dark .bg-primary {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+/* Make "View Details" and "Book Now" buttons visible in dark mode */
+.dark .view-details-btn,
+.dark button.w-full {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.dark .btn-outline,
+.dark [variant="outline"] {
+  color: var(--foreground);
+  border-color: var(--border);
+}
+
+/* Ensure price text is visible in dark mode */
+.dark .price-text {
+  color: var(--primary);
+}
+
+/* Add smooth transition when switching themes */
+body, 
+input, 
+button, 
+select, 
+textarea,
+.bg-card,
+.bg-background,
+.text-foreground,
+.text-muted-foreground,
+.border-border {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Fix text contrast issues in buttons */
+.bg-apartment button {
+  color: var(--primary-foreground);
+}
+
+.dark .bg-white button,
+button.bg-white {
+  color: var(--foreground-primary);
+}
+
+.dark button[class*="bg-white"] {
+  color: var(--foreground);
+}
+
+/* Ensure consistent text colors in different backgrounds */
+.dark .bg-card,
+.dark .bg-background,
+.dark .bg-muted {
+  color: var(--foreground);
+}
+
+/* Ensure text in cards is visible in both themes */
+.dark .card-content {
+  color: var(--card-foreground);
+}
+
+/* Fix for dark theme text in inputs and other form controls */
+.dark input,
+.dark select,
+.dark textarea {
+  color: var(--foreground);
+}
+
+/* Fix for buttons in dark mode */
+.dark button.bg-primary {
+  color: var(--primary-foreground);
+}
+
+.dark button.bg-secondary {
+  color: var(--secondary-foreground);
+}
+
+/* Ensure text is readable in apartment cards */
+.apartment-card {
+  color: var(--card-foreground);
+}
+
+.dark .apartment-card {
+  background-color: var(--card);
+  color: var(--card-foreground);
+}
+
+/* Fix for view details and book now buttons */
+.dark .view-details-btn,
+.dark .book-now-btn {
+  color: var(--primary-foreground);
+}
+
+/* Fix for button text colors */
+.dark .bg-apartment button.text-white {
+  color: var(--primary-foreground);
+}
+
+.dark button.text-white {
+  color: var(--primary-foreground);
+}
+
+/* Fix for navbar and footer in dark mode - prevent transparency */
+.dark .bg-apartment,
+.dark .fixed.top-0,
+.dark .fixed.bottom-0 {
+  background-color: var(--background);
+  border-color: var(--border);
+}
+
+/* Create Account button visibility fix */
+.dark .rounded-md.bg-primary,
+.dark button.bg-primary {
+  background-color: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+}
+
+/* Fix for dark theme apartment details modal */
+.dark .modal-content {
+  background-color: var(--card);
+  color: var(--card-foreground);
+  border-color: var(--border);
+}
+
+/* Fix text colors in dark mode modals */
+.dark .modal-title {
+  color: var(--foreground);
+}
+
+.dark .modal-description {
+  color: var(--muted-foreground);
+}
+
+/* Fix map component in dark mode */
+.dark .map-container {
+  filter: brightness(0.8) contrast(1.2);
+}
+
+/* Additional fixes for images in dark mode */
+.dark img {
+  filter: brightness(0.9);
+}
