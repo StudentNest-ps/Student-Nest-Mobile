@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MobileLayout } from '../components/Layout/MobileLayout';
 import { useNavigate } from 'react-router-dom';
 import { ChatModal } from '../components/Chat/ChatModal';
@@ -7,9 +6,10 @@ import { OwnerApartmentsList } from '../components/Owner/OwnerApartmentsList';
 import { OwnerBookingsList } from '../components/Owner/OwnerBookingsList';
 import { AddPropertyModal } from '../components/Owner/AddPropertyModal';
 import { toast } from 'sonner';
-import { Button } from '../components/ui/button';
+import { Button } from '../components/UI/button';
 import { MessageCircle, CalendarClock, Building, Plus, Bell, Settings } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { ownerService, Property } from '../services/owner.service';
 
 const OwnerDashboard = () => {
   const navigate = useNavigate();
@@ -18,6 +18,9 @@ const OwnerDashboard = () => {
   const [showAddProperty, setShowAddProperty] = useState(false);
   const [showMessages, setShowMessages] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // UI-only mock data for notifications
   const mockNotifications = [
@@ -48,6 +51,54 @@ const OwnerDashboard = () => {
   ];
 
   const unreadCount = mockNotifications.filter(n => !n.read).length;
+
+  useEffect(() => {
+    fetchProperties();
+  }, []);
+
+  const fetchProperties = async () => {
+    try {
+      setLoading(true);
+      const data = await ownerService.getMyProperties();
+      setProperties(data);
+      setError(null);
+    } catch (err) {
+      setError('Failed to load properties');
+      toast.error('Failed to load properties');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddProperty = async (propertyData: Omit<Property, '_id' | 'ownerId'>) => {
+    try {
+      await ownerService.addProperty(propertyData);
+      toast.success('Property added successfully');
+      fetchProperties(); // Refresh the list
+    } catch (err) {
+      toast.error('Failed to add property');
+    }
+  };
+
+  const handleUpdateProperty = async (propertyId: string, propertyData: Partial<Property>) => {
+    try {
+      await ownerService.updateProperty(propertyId, propertyData);
+      toast.success('Property updated successfully');
+      fetchProperties(); // Refresh the list
+    } catch (err) {
+      toast.error('Failed to update property');
+    }
+  };
+
+  const handleDeleteProperty = async (propertyId: string) => {
+    try {
+      await ownerService.deleteProperty(propertyId);
+      toast.success('Property deleted successfully');
+      fetchProperties(); // Refresh the list
+    } catch (err) {
+      toast.error('Failed to delete property');
+    }
+  };
 
   return (
     <MobileLayout>

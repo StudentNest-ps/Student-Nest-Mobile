@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create axios instance with base configuration
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api', // Updated to point to your backend server
+  baseURL: 'https://student-nest-backend.onrender.com/api', // Updated to point to your backend server
   headers: {
     'Content-Type': 'application/json',
   },
