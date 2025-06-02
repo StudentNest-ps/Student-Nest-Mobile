@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './App.css';
@@ -16,6 +15,7 @@ import SignUp from './pages/SignUp';
 import NotFound from './pages/NotFound';
 import BookingConfirmation from './pages/BookingConfirmation';
 import OwnerDashboard from './pages/OwnerDashboard';
+import Bookings from './pages/Bookings';
 
 function App() {
   return (
@@ -32,6 +32,7 @@ function App() {
             <Route path="/signup" element={<SignUp />} />
             <Route path="/booking/:id" element={<BookingConfirmation />} />
             <Route path="/owner-dashboard" element={<OwnerDashboard />} />
+            <Route path="/bookings" element={<Bookings />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

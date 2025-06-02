@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { Home, MapPin, User, BookOpen } from 'lucide-react';
+import { Home, MapPin, User, BookOpen, Calendar } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -28,6 +27,7 @@ export const MobileBottomNav = () => {
     { icon: Home, label: 'Home', path: '/' },
     { icon: MapPin, label: 'Apartments', path: '/apartments' },
     { icon: BookOpen, label: 'Blog', path: '/blog' },
+    { icon: Calendar, label: 'My Bookings', path: '/bookings' },
     { icon: User, label: 'Profile', path: '/profile' }
   ];
   

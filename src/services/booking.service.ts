@@ -20,26 +20,25 @@ export interface Booking {
     id: string;
     name: string;
     location: string;
-    image?: string;
-    owner?: {
+    image: string;
+    owner: {
       id: string;
       name: string;
-      phone?: string;
-      email?: string;
+      phone: string;
+      email: string;
     };
   };
-  checkIn: string;
-  checkOut: string;
-  guests: number;
-  totalAmount: number;
-  status: BookingStatus;
-  bookingDate: string;
   student: {
     id: string;
     name: string;
     email: string;
-    phone?: string;
+    phone: string;
   };
+  checkIn: string;
+  checkOut: string;
+  totalAmount: number;
+  status: 'pending' | 'confirmed' | 'cancelled' | 'already_booked';
+  bookingDate: string;
 }
 
 class BookingService {
@@ -48,9 +47,9 @@ class BookingService {
     return response.status === 201;
   }
 
-  async getMyBookings() {
+  async getMyBookings(): Promise<Booking[]> {
     const response = await api.get('/bookings/me');
-    return response.data as Booking[];
+    return response.data;
   }
 
   async getOwnerBookings() {
@@ -58,9 +57,9 @@ class BookingService {
     return response.data as Booking[];
   }
 
-  async cancelBooking(bookingId: string) {
+  async cancelBooking(bookingId: string): Promise<Booking> {
     const response = await api.delete(`/bookings/${bookingId}`);
-    return response.status === 200;
+    return response.data;
   }
 
   async approveBooking(bookingId: string) {
