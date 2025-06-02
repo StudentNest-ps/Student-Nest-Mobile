@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Home, MapPin, User, BookOpen, Calendar } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface NavItem {
   icon: LucideIcon;
@@ -12,6 +13,7 @@ interface NavItem {
 export const MobileBottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
   
   const [activePath, setActivePath] = useState(() => {
     // Get the current path
@@ -23,13 +25,22 @@ export const MobileBottomNav = () => {
     setActivePath(location.pathname);
   }, [location]);
   
-  const navItems: NavItem[] = [
+  // Define base nav items without bookings
+  const baseNavItems: NavItem[] = [
     { icon: Home, label: 'Home', path: '/' },
     { icon: MapPin, label: 'Apartments', path: '/apartments' },
     { icon: BookOpen, label: 'Blog', path: '/blog' },
-    { icon: Calendar, label: 'My Bookings', path: '/bookings' },
     { icon: User, label: 'Profile', path: '/profile' }
   ];
+
+  // Add bookings only for students
+  const navItems = user?.role === 'student' 
+    ? [
+        ...baseNavItems.slice(0, 3), // Take first 3 items
+        { icon: Calendar, label: 'My Bookings', path: '/bookings' },
+        baseNavItems[3] // Add profile last
+      ]
+    : baseNavItems;
   
   const handleNavClick = (path: string) => {
     setActivePath(path);

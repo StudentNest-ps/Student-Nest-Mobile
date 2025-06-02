@@ -2,16 +2,34 @@ import React, { useEffect, useState } from 'react';
 import { MobileLayout } from '../components/Layout/MobileLayout';
 import { Calendar, Clock, MapPin, Building, X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { Button } from '../components/ui/button';
+import { Button } from '../components/UI/button';
 import { bookingService, Booking } from '../services/booking.service';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/UI/select';
 
 const Bookings = () => {
   const { user } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+
+  if (user?.role !== 'student') {
+    return (
+      <MobileLayout>
+        <div className="container mx-auto px-4 py-6">
+          <div className="text-center py-8">
+            <X className="w-12 h-12 mx-auto text-red-500 mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Access Denied</h3>
+            <p className="text-muted-foreground">
+              This page is only accessible to students.
+            </p>
+          </div>
+        </div>
+      </MobileLayout>
+    );
+  }
 
   useEffect(() => {
     fetchBookings();
@@ -56,6 +74,10 @@ const Bookings = () => {
     }
   };
 
+  const filteredBookings = bookings.filter(booking => 
+    statusFilter === 'all' ? true : booking.status === statusFilter
+  );
+
   if (loading) {
     return (
       <MobileLayout>
@@ -82,17 +104,38 @@ const Bookings = () => {
   return (
     <MobileLayout>
       <div className="container mx-auto px-4 py-6">
-        <h1 className="text-2xl font-bold mb-6">My Bookings</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">My Bookings</h1>
+          <Select
+            value={statusFilter}
+            onValueChange={setStatusFilter}
+          >
+            <SelectTrigger className="w-[180px] bg-white dark:bg-gray-800 border-border">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent className="bg-white dark:bg-gray-800 border-border">
+              <SelectItem value="all" className="hover:bg-gray-100 dark:hover:bg-gray-700">All Bookings</SelectItem>
+              <SelectItem value="confirmed" className="hover:bg-gray-100 dark:hover:bg-gray-700">Confirmed</SelectItem>
+              <SelectItem value="pending" className="hover:bg-gray-100 dark:hover:bg-gray-700">Pending</SelectItem>
+              <SelectItem value="cancelled" className="hover:bg-gray-100 dark:hover:bg-gray-700">Cancelled</SelectItem>
+              <SelectItem value="already_booked" className="hover:bg-gray-100 dark:hover:bg-gray-700">Already Booked</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         
-        {bookings.length === 0 ? (
+        {filteredBookings.length === 0 ? (
           <div className="text-center py-8">
             <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No Bookings Yet</h3>
-            <p className="text-muted-foreground">You haven't made any bookings yet.</p>
+            <h3 className="text-lg font-semibold mb-2">No Bookings Found</h3>
+            <p className="text-muted-foreground">
+              {statusFilter === 'all' 
+                ? "You haven't made any bookings yet."
+                : `No ${statusFilter} bookings found.`}
+            </p>
           </div>
         ) : (
           <div className="space-y-4">
-            {bookings.map((booking) => (
+            {filteredBookings.map((booking) => (
               <div 
                 key={booking.id}
                 className="rounded-xl overflow-hidden border border-border bg-card shadow-sm card-hover"

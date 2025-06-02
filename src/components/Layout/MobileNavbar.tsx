@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Bell, Moon, Sun, ArrowLeft } from 'lucide-react';
-import { Button } from '../ui/button';
+import { Button } from '../UI/button';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 
