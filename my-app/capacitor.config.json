@@ -1,0 +1,10 @@
+{
+  "appId": "com.example.app",
+  "appName": "MOBILE_UI_MAESTRO",
+  "webDir": "dist",
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": false
+    }
+  }
+}
