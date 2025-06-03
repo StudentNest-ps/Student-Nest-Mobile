@@ -7,6 +7,7 @@ import React, {
   useEffect
 } from "react";
 import { authService } from "../services/auth.service";
+import { toast } from "sonner";
 
 interface User {
   id: string;
@@ -156,9 +157,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       const success = await authService.registerUser(data);
       return success;
-    } catch (error: any) {
-      console.error("Signup failed:", error);
-      throw error;
+    } catch {
+      toast.error("Something Went Wrong");
     }
   };
 
