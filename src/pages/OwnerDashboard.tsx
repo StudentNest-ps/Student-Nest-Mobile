@@ -1,15 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { MobileLayout } from '../components/Layout/MobileLayout';
-import { useNavigate } from 'react-router-dom';
-import { ChatModal } from '../components/Chat/ChatModal';
-import { OwnerApartmentsList } from '../components/Owner/OwnerApartmentsList';
-import { OwnerBookingsList } from '../components/Owner/OwnerBookingsList';
-import { AddPropertyModal } from '../components/Owner/AddPropertyModal';
-import { toast } from 'sonner';
-import { Button } from '../components/UI/button';
-import { MessageCircle, CalendarClock, Building, Plus, Bell, Settings } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
-import { ownerService, Property } from '../services/owner.service';
+import React, { useState, useEffect } from "react";
+import { MobileLayout } from "../components/Layout/MobileLayout";
+import { useNavigate } from "react-router-dom";
+import { ChatModal } from "../components/Chat/ChatModal";
+import { OwnerApartmentsList } from "../components/Owner/OwnerApartmentsList";
+import { OwnerBookingsList } from "../components/Owner/OwnerBookingsList";
+import { AddPropertyModal } from "../components/Owner/AddPropertyModal";
+import { toast } from "sonner";
+import { Button } from "../components/UI/button";
+import {
+  MessageCircle,
+  CalendarClock,
+  Building,
+  Plus,
+  Bell,
+  Settings
+} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle
+} from "../components/ui/dialog";
+import { ownerService, Property } from "../services/owner.service";
 
 const OwnerDashboard = () => {
   const navigate = useNavigate();
@@ -25,78 +37,87 @@ const OwnerDashboard = () => {
   // UI-only mock data for notifications
   const mockNotifications = [
     {
-      id: '1',
-      type: 'message',
-      sender: 'Emily Johnson',
-      content: 'Hi, I\'m interested in your apartment on Oak Street. Is it still available?',
-      time: '10 minutes ago',
+      id: "1",
+      type: "message",
+      sender: "Emily Johnson",
+      content:
+        "Hi, I'm interested in your apartment on Oak Street. Is it still available?",
+      time: "10 minutes ago",
       read: false
     },
     {
-      id: '2',
-      type: 'booking',
-      sender: 'Michael Smith',
-      content: 'New booking request for Downtown Studio',
-      time: '2 hours ago',
+      id: "2",
+      type: "booking",
+      sender: "Michael Smith",
+      content: "New booking request for Downtown Studio",
+      time: "2 hours ago",
       read: false
     },
     {
-      id: '3',
-      type: 'message',
-      sender: 'Sophia Williams',
-      content: 'Thanks for accepting my booking! Looking forward to moving in next month.',
-      time: '1 day ago',
+      id: "3",
+      type: "message",
+      sender: "Sophia Williams",
+      content:
+        "Thanks for accepting my booking! Looking forward to moving in next month.",
+      time: "1 day ago",
       read: true
     }
   ];
 
-  const unreadCount = mockNotifications.filter(n => !n.read).length;
+  const unreadCount = mockNotifications.filter((n) => !n.read).length;
 
   useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        setLoading(true);
+        const data = await ownerService.getMyProperties();
+        console.log(data);
+
+        setProperties(data);
+        setError(null);
+      } catch (err) {
+        setError("Failed to load properties");
+        toast.error("Failed to load properties");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchProperties();
   }, []);
 
-  const fetchProperties = async () => {
-    try {
-      setLoading(true);
-      const data = await ownerService.getMyProperties();
-      setProperties(data);
-      setError(null);
-    } catch (err) {
-      setError('Failed to load properties');
-      toast.error('Failed to load properties');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleAddProperty = async (propertyData: Omit<Property, '_id' | 'ownerId'>) => {
+  const handleAddProperty = async (
+    propertyData: Omit<Property, "_id" | "ownerId">
+  ) => {
     try {
       await ownerService.addProperty(propertyData);
-      toast.success('Property added successfully');
-      fetchProperties(); // Refresh the list
+      toast.success("Property added successfully");
+      //TODO: Update the apartments after insertion
     } catch (err) {
-      toast.error('Failed to add property');
+      toast.error("Failed to add property");
     }
   };
 
-  const handleUpdateProperty = async (propertyId: string, propertyData: Partial<Property>) => {
+  const handleUpdateProperty = async (
+    propertyId: string,
+    propertyData: Partial<Property>
+  ) => {
     try {
       await ownerService.updateProperty(propertyId, propertyData);
-      toast.success('Property updated successfully');
-      fetchProperties(); // Refresh the list
+      toast.success("Property updated successfully");
+      //TODO: Update the apartments after update
     } catch (err) {
-      toast.error('Failed to update property');
+      toast.error("Failed to update property");
     }
   };
 
   const handleDeleteProperty = async (propertyId: string) => {
     try {
       await ownerService.deleteProperty(propertyId);
-      toast.success('Property deleted successfully');
-      fetchProperties(); // Refresh the list
+      toast.success("Property deleted successfully");
+      //TODO: Update the apartments after Delete
     } catch (err) {
-      toast.error('Failed to delete property');
+      toast.error("Failed to delete property");
     }
   };
 
@@ -106,9 +127,9 @@ const OwnerDashboard = () => {
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Owner Dashboard</h1>
           <div className="flex items-center gap-2">
-            <Button 
-              size="icon" 
-              variant="ghost" 
+            <Button
+              size="icon"
+              variant="ghost"
               className="relative"
               onClick={() => setShowNotifications(true)}
             >
@@ -119,12 +140,16 @@ const OwnerDashboard = () => {
                 </span>
               )}
             </Button>
-            <Button size="icon" variant="ghost" onClick={() => navigate('/profile')}>
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => navigate("/profile")}
+            >
               <Settings className="h-5 w-5" />
             </Button>
           </div>
         </div>
-        
+
         <div className="grid grid-cols-2 gap-4">
           <Button
             variant="outline"
@@ -134,7 +159,7 @@ const OwnerDashboard = () => {
             <Building className="h-6 w-6 mb-2" />
             <span>My Apartments</span>
           </Button>
-          
+
           <Button
             variant="outline"
             className="flex flex-col items-center justify-center h-24 bg-card border border-border relative"
@@ -148,7 +173,7 @@ const OwnerDashboard = () => {
               </span>
             )}
           </Button>
-          
+
           <Button
             variant="outline"
             className="flex flex-col items-center justify-center h-24 bg-card border border-border"
@@ -157,7 +182,7 @@ const OwnerDashboard = () => {
             <CalendarClock className="h-6 w-6 mb-2" />
             <span>Bookings</span>
           </Button>
-          
+
           <Button
             variant="outline"
             className="flex flex-col items-center justify-center h-24 bg-card border border-border"
@@ -167,7 +192,7 @@ const OwnerDashboard = () => {
             <span>Add Property</span>
           </Button>
         </div>
-        
+
         {/* Messages Section - Only show when messages button is not clicked */}
         {!showMessages && (
           <div className="bg-card rounded-lg border border-border p-4">
@@ -175,21 +200,26 @@ const OwnerDashboard = () => {
               <MessageCircle className="mr-2 h-5 w-5" />
               Recent Messages
             </h2>
-            
-            {mockNotifications.filter(n => n.type === 'message').length > 0 ? (
+
+            {mockNotifications.filter((n) => n.type === "message").length >
+            0 ? (
               <div className="divide-y divide-border">
                 {mockNotifications
-                  .filter(n => n.type === 'message')
+                  .filter((n) => n.type === "message")
                   .map((msg) => (
-                    <div 
+                    <div
                       key={msg.id}
                       className={`py-3 cursor-pointer hover:bg-muted/50 px-2 -mx-2 rounded-md ${
-                        !msg.read ? 'bg-muted/30' : ''
+                        !msg.read ? "bg-muted/30" : ""
                       }`}
                     >
                       <div className="flex justify-between items-start">
                         <div>
-                          <h3 className={`font-medium ${!msg.read ? 'font-semibold' : ''}`}>
+                          <h3
+                            className={`font-medium ${
+                              !msg.read ? "font-semibold" : ""
+                            }`}
+                          >
                             {msg.sender}
                             {!msg.read && (
                               <span className="ml-2 bg-primary text-primary-foreground text-xs py-0.5 px-1.5 rounded-full">
@@ -212,9 +242,9 @@ const OwnerDashboard = () => {
               <div className="text-center py-8 text-muted-foreground">
                 <MessageCircle className="h-10 w-10 mx-auto mb-2 opacity-20" />
                 <p>No messages from students yet</p>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="mt-4"
                   onClick={() => setShowApartments(true)}
                 >
@@ -225,20 +255,20 @@ const OwnerDashboard = () => {
           </div>
         )}
       </div>
-      
+
       {/* Modals */}
       {showApartments && (
-        <OwnerApartmentsList onClose={() => setShowApartments(false)} />
+        <OwnerApartmentsList apartments={properties} onClose={() => setShowApartments(false)} />
       )}
-      
+
       {showBookings && (
         <OwnerBookingsList onClose={() => setShowBookings(false)} />
       )}
-      
+
       {showAddProperty && (
         <AddPropertyModal onClose={() => setShowAddProperty(false)} />
       )}
-      
+
       <Dialog open={showNotifications} onOpenChange={setShowNotifications}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -248,19 +278,27 @@ const OwnerDashboard = () => {
             {mockNotifications.length > 0 ? (
               <div className="space-y-4 py-2">
                 {mockNotifications.map((notification) => (
-                  <div 
-                    key={notification.id} 
-                    className={`p-3 rounded-lg border ${!notification.read ? 'bg-muted/40 border-primary/20' : 'border-border bg-card'}`}
+                  <div
+                    key={notification.id}
+                    className={`p-3 rounded-lg border ${
+                      !notification.read
+                        ? "bg-muted/40 border-primary/20"
+                        : "border-border bg-card"
+                    }`}
                   >
                     <div className="flex justify-between">
                       <h4 className="font-medium">{notification.sender}</h4>
-                      <span className="text-xs text-muted-foreground">{notification.time}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {notification.time}
+                      </span>
                     </div>
-                    <p className="text-sm mt-1 text-foreground">{notification.content}</p>
+                    <p className="text-sm mt-1 text-foreground">
+                      {notification.content}
+                    </p>
                     {!notification.read && (
                       <div className="mt-2 flex justify-end">
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="sm"
                           onClick={() => {
                             toast.success("Marked as read");

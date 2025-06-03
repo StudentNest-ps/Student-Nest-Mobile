@@ -234,3 +234,11 @@ button.bg-white {
 .dark img {
   filter: brightness(0.9);
 }
+
+.glow-text {
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+}
+
+.drop-shadow-glow {
+  filter: drop-shadow(0 0 6px #22c55e);
+}
