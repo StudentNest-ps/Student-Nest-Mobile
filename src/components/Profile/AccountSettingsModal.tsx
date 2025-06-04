@@ -1,152 +1,121 @@
-
 import React, { useState } from 'react';
-import { X, Save } from 'lucide-react';
-import { Button } from '../ui/button';
-import { useAuth } from '../../contexts/AuthContext';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
+import { Button } from '../UI/button';
+import { Input } from '../UI/input';
+import { Label } from '../UI/label';
+import { User } from '../../services/user.service';
+import { userService } from '../../services/user.service';
 import { toast } from 'sonner';
 
-interface User {
-  id: string;
-  name?: string;
-  email?: string;
-}
-
 interface AccountSettingsModalProps {
-  user: User | null;
+  user: User;
   onClose: () => void;
 }
 
-export const AccountSettingsModal = ({ user, onClose }: AccountSettingsModalProps) => {
-  const { updateUserProfile } = useAuth();
+export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({ user, onClose }) => {
   const [formData, setFormData] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    phone: '',
-    address: ''
+    username: user.username || '',
+    phoneNumber: user.phoneNumber || '',
+    password: '',
+    confirmPassword: ''
   });
-  const [isSaving, setIsSaving] = useState(false);
-  
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
-  
-  const handleSubmit = (e: React.FormEvent) => {
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user?.id) {
-      toast.error("User data is missing");
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("Passwords don't match");
       return;
     }
-    
-    setIsSaving(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      updateUserProfile({
-        id: user.id,
-        name: formData.name,
-        email: formData.email
-      });
-      
-      setIsSaving(false);
-      toast.success("Profile updated successfully");
+
+    setIsLoading(true);
+    try {
+      const updateData = {
+        username: formData.username,
+        phoneNumber: formData.phoneNumber,
+        ...(formData.password ? { password: formData.password } : {})
+      };
+
+      await userService.updateProfile(updateData);
+      toast.success('Profile updated successfully');
       onClose();
-    }, 1000);
+    } catch (error) {
+      toast.error('Failed to update profile');
+      console.error('Error updating profile:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
-  
+
   return (
-    <div className="fixed inset-0 z-50 flex justify-center items-center p-4" onClick={onClose}>
-      <div 
-        className="bg-white dark:bg-gray-800 w-full max-w-md rounded-xl shadow-lg border border-border animate-fade-in max-h-[90vh] overflow-auto" 
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="p-4 border-b border-border flex items-center justify-between">
-          <h2 className="font-semibold text-lg">Account Settings</h2>
-          <button 
-            onClick={onClose}
-            className="p-1 rounded-full hover:bg-muted"
-          >
-            <X className="h-5 w-5 text-muted-foreground" />
-          </button>
-        </div>
-        
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Account Settings</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label className="block text-sm font-medium">
-              Full Name
-            </label>
-            <input 
-              type="text"
-              name="name"
-              value={formData.name}
+            <Label htmlFor="username">Full Name</Label>
+            <Input
+              id="username"
+              name="username"
+              value={formData.username}
               onChange={handleChange}
-              className="w-full p-2 border border-border rounded-md bg-background"
-              required
+              placeholder="Enter your full name"
             />
           </div>
           
           <div className="space-y-2">
-            <label className="block text-sm font-medium">
-              Email Address
-            </label>
-            <input 
-              type="email"
-              name="email"
-              value={formData.email}
+            <Label htmlFor="phoneNumber">Phone Number</Label>
+            <Input
+              id="phoneNumber"
+              name="phoneNumber"
+              value={formData.phoneNumber}
               onChange={handleChange}
-              className="w-full p-2 border border-border rounded-md bg-background"
-              required
+              placeholder="Enter your phone number"
             />
           </div>
           
           <div className="space-y-2">
-            <label className="block text-sm font-medium">
-              Phone Number
-            </label>
-            <input 
-              type="tel"
-              name="phone"
-              value={formData.phone}
+            <Label htmlFor="password">New Password (optional)</Label>
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              value={formData.password}
               onChange={handleChange}
-              className="w-full p-2 border border-border rounded-md bg-background"
-              placeholder="Optional"
+              placeholder="Enter new password"
             />
           </div>
           
           <div className="space-y-2">
-            <label className="block text-sm font-medium">
-              Address
-            </label>
-            <input 
-              type="text"
-              name="address"
-              value={formData.address}
+            <Label htmlFor="confirmPassword">Confirm New Password</Label>
+            <Input
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              value={formData.confirmPassword}
               onChange={handleChange}
-              className="w-full p-2 border border-border rounded-md bg-background"
-              placeholder="Optional"
+              placeholder="Confirm new password"
             />
           </div>
           
-          <div className="pt-4 flex justify-end">
-            <Button 
-              type="submit" 
-              className="flex items-center gap-2"
-              disabled={isSaving}
-            >
-              {isSaving ? 'Saving...' : (
-                <>
-                  <Save className="h-4 w-4" />
-                  Save Changes
-                </>
-              )}
+          <div className="flex justify-end gap-3 pt-4">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };

@@ -1,24 +1,33 @@
-
 import React, { useState } from 'react';
 import { MobileLayout } from '../components/Layout/MobileLayout';
-import { Button } from '../components/ui/button';
-import { User, Settings, Bell, LogOut, Building, MessageCircle } from 'lucide-react';
+import { Button } from '../components/UI/button';
+import { User as UserIcon, Settings, Bell, LogOut, Building, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AccountSettingsModal } from '../components/Profile/AccountSettingsModal';
 import { toast } from 'sonner';
 import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { useAuth } from '../contexts/AuthContext';
+import { User } from '../services/user.service';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user: authUser, logout } = useAuth();
   const [showSettings, setShowSettings] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   
   // TODO: Replace with your database API calls
   const [ownerApartments, setOwnerApartments] = useState<any[]>([]);
   const [mockNotifications, setMockNotifications] = useState<any[]>([]);
+  
+  // Transform auth user to match User type
+  const user: User = authUser ? {
+    _id: authUser.id,
+    email: authUser.email || '',
+    username: authUser.name || '',
+    phoneNumber: authUser.phoneNumber || '',
+    role: authUser.role || 'student'
+  } : null;
   
   // Fetch user data from your database API
   React.useEffect(() => {
@@ -55,7 +64,7 @@ const ProfilePage = () => {
       <MobileLayout>
         <div className="flex flex-col items-center justify-center h-[60vh] space-y-4">
           <div className="bg-muted p-8 rounded-full">
-            <User className="h-12 w-12 text-muted-foreground" />
+            <UserIcon className="h-12 w-12 text-muted-foreground" />
           </div>
           <h1 className="text-2xl font-bold">Sign In Required</h1>
           <p className="text-muted-foreground text-center">
@@ -83,10 +92,10 @@ const ProfilePage = () => {
         {/* Profile Header */}
         <div className="flex items-center gap-4 p-4 bg-card rounded-xl border border-border">
           <div className="h-16 w-16 bg-muted rounded-full grid place-items-center">
-            <User className="h-8 w-8 text-muted-foreground" />
+            <UserIcon className="h-8 w-8 text-muted-foreground" />
           </div>
           <div>
-            <h1 className="text-xl font-bold">{user?.name || 'User'}</h1>
+            <h1 className="text-xl font-bold">{user?.username || 'User'}</h1>
             <p className="text-muted-foreground">{user?.email || 'user@example.com'}</p>
             <span className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded-full">
               {user?.role === 'owner' ? 'Property Owner' : 'Student'}
