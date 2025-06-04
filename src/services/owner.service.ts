@@ -1,22 +1,27 @@
 import api from "./api";
 
-export interface Property {
-  _id: string;
+export interface CreatePropertyPayload {
   title: string;
   description: string;
   address: string;
   city: string;
   country: string;
   image: string;
-  ownerId: string;
+  ownerId: string; // Client must provide this
+  ownerName: string;
+  ownerPhoneNumber: string;
   price: number;
-  maxGuests: string;
+  maxGuests: number;
   type: string;
   availableFrom: string;
   availableTo: string;
   amenities: string[];
-  createdAt: string;
-  updatedAt: string;
+}
+
+export interface Property extends CreatePropertyPayload {
+  _id: string;       // Server-generated
+  createdAt: string; // Server-generated
+  updatedAt: string; // Server-generated
 }
 
 class OwnerService {
@@ -42,7 +47,7 @@ class OwnerService {
 
   // Add a new property
   async addProperty(
-    propertyData: Omit<Property, "_id" | "ownerId">
+    propertyData: CreatePropertyPayload
   ): Promise<Property> {
     try {
       const ownerId = this.getOwnerId();

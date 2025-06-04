@@ -86,17 +86,17 @@ const OwnerDashboard = () => {
     fetchProperties();
   }, []);
 
-  const handleAddProperty = async (
-    propertyData: Omit<Property, "_id" | "ownerId">
-  ) => {
-    try {
-      await ownerService.addProperty(propertyData);
-      toast.success("Property added successfully");
-      //TODO: Update the apartments after insertion
-    } catch (err) {
-      toast.error("Failed to add property");
-    }
-  };
+  // const handleAddProperty = async (
+  //   propertyData: Omit<Property, "_id" | "ownerId">
+  // ) => {
+  //   try {
+  //     await ownerService.addProperty(propertyData);
+  //     toast.success("Property added successfully");
+  //     //TODO: Update the apartments after insertion
+  //   } catch (err) {
+  //     toast.error("Failed to add property");
+  //   }
+  // };
 
   const handleUpdateProperty = async (
     propertyId: string,

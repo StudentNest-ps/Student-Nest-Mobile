@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Property } from "@/services/owner.service";
+import { ScrollArea } from "../UI/scroll-area";
 
 interface OwnerApartmentsListProps {
   onClose: () => void;
@@ -40,66 +41,66 @@ export const OwnerApartmentsList = ({
   return (
     <AnimatePresence>
       <motion.div
-        className="fixed inset-0 z-50 flex justify-center items-center p-4 bg-black/80 backdrop-blur-sm"
+        className="fixed inset-0 z-50 flex justify-center items-center p-4 bg-black/20 backdrop-blur-sm"
         onClick={onClose}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
       >
         <motion.div
-          className="w-full max-w-4xl rounded-2xl shadow-2xl border border-white/10 bg-gradient-to-br from-gray-900/80 to-gray-800/90 backdrop-blur-md max-h-[90vh] overflow-auto p-6"
+          className="w-full max-w-4xl rounded-2xl shadow-2xl border border-gray-700 bg-white dark:bg-gray-900 backdrop-blur-lg max-h-[90vh]p-6"
           onClick={(e) => e.stopPropagation()}
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
           transition={{ type: "spring", stiffness: 120, damping: 12 }}
         >
-          <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
-            <h2 className="w-full text-center text-3xl font-bold text-white tracking-wide glow-text">
+          <div className="flex items-center justify-between border-b border-gray-700 pb-4 mb-6">
+            <h2 className="w-full text-center text-3xl font-bold text-gray-900 dark:text-white tracking-wide">
               My Apartments
             </h2>
             <motion.button
               whileHover={{ scale: 1.2 }}
               whileTap={{ scale: 0.9 }}
               onClick={onClose}
-              className="p-2 rounded-full hover:bg-white/10 text-white"
+              className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
             >
-              <X className="h-6 w-6" color="white" />
+              <X className="h-6 w-6" color="currentColor" />
             </motion.button>
           </div>
+<ScrollArea className="h-[70vh] w-full ">
 
           {apartments.length > 0 ? (
             <div className="space-y-6">
               {apartments.map((apartment) => (
                 <motion.div
                   key={apartment._id}
-                  className="rounded-xl border border-white/10 p-5 bg-gradient-to-r from-gray-800 to-gray-700 shadow-lg hover:shadow-xl transition-shadow duration-300"
+                  className="rounded-xl border border-gray-700 p-5 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 shadow-lg hover:shadow-xl transition-shadow duration-300"
                   whileHover={{ scale: 1.02 }}
                 >
                   <div className="flex gap-6">
                     <img
                       src={apartment.image}
                       alt={apartment.title}
-                      className="w-32 h-32 object-cover rounded-lg border-2 border-white/10"
+                      className="w-32 h-32 object-cover rounded-lg border-2 border-gray-700"
                     />
                     <div className="flex-1">
                       <div className="flex justify-between items-start">
-                        <h3 className="text-xl font-semibold text-white">
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                           {apartment.title}
                         </h3>
-                        <p className="text-lg font-bold text-green-400 drop-shadow-glow">
+                        <p className="text-lg font-bold text-black dark:text-white">
                           ${apartment.price}
                         </p>
                       </div>
-                      <p className="text-sm text-gray-400 mt-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                         {apartment.description}
                       </p>
 
-                      <div className="flex items-center gap-2 mt-2 text-gray-300 text-sm">
-                        <MapPin className="h-4 w-4 text-pink-400" />
+                      <div className="flex items-center gap-2 mt-2 text-gray-600 dark:text-gray-300 text-sm">
+                        <MapPin className="h-12 w-12 text-pink-400" />
                         <p>
-                          {apartment.address}, {apartment.city},{" "}
-                          {apartment.country}
+                          {apartment.address}, {apartment.city}, {apartment.country}
                         </p>
                       </div>
 
@@ -107,7 +108,7 @@ export const OwnerApartmentsList = ({
                         {apartment.amenities.map((amenity) => (
                           <div
                             key={amenity}
-                            className="flex items-center gap-1 text-xs text-gray-300 bg-white/5 px-2 py-1 rounded-full"
+                            className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded-full"
                           >
                             {getAmenityIcon(amenity)}
                             {amenity}
@@ -137,9 +138,9 @@ export const OwnerApartmentsList = ({
               ))}
             </div>
           ) : (
-            <div className="text-center py-12 text-gray-300">
+            <div className="text-center py-12 text-gray-600 dark:text-gray-400">
               <p className="text-lg">
-                You haven&apos;t listed any properties yet.
+                You haven't listed any properties yet.
               </p>
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -149,6 +150,8 @@ export const OwnerApartmentsList = ({
               </motion.button>
             </div>
           )}
+</ScrollArea>
+
         </motion.div>
       </motion.div>
     </AnimatePresence>
