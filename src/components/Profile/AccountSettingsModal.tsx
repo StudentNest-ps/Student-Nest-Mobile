@@ -61,13 +61,13 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({ user
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="username">Full Name</Label>
+            <Label htmlFor="username">Username</Label>
             <Input
               id="username"
               name="username"
               value={formData.username}
               onChange={handleChange}
-              placeholder="Enter your full name"
+              placeholder="Enter your username"
             />
           </div>
           
@@ -106,14 +106,9 @@ export const AccountSettingsModal: React.FC<AccountSettingsModalProps> = ({ user
             />
           </div>
           
-          <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Saving...' : 'Save Changes'}
-            </Button>
-          </div>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? 'Saving...' : 'Save Changes'}
+          </Button>
         </form>
       </DialogContent>
     </Dialog>

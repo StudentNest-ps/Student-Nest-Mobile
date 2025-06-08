@@ -16,14 +16,14 @@ export interface UpdateUserProfileData {
 
 export const userService = {
   // Get current user profile
-  getCurrentUser: async (): Promise<User> => {
-    const response = await api.get('/sn/users/me'); // Removed duplicate /api
-    return response.data;
-  },
+  // getCurrentUser: async (): Promise<User> => {
+  //   const response = await api.get('/users/me'); // Removed /sn prefix
+  //   return response.data;
+  // },
 
   // Update user profile
   updateProfile: async (data: UpdateUserProfileData): Promise<{ message: string }> => {
-    const response = await api.patch('/sn/users/me', data); // Removed duplicate /api
+    const response = await api.patch('/users/me', data); // Removed /sn prefix
     return response.data;
   }
 };
