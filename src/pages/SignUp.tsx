@@ -3,7 +3,7 @@ import React from 'react';
 import { MobileLayout } from '../components/Layout/MobileLayout';
 import { SignUpForm } from '../components/Auth/SignUpForm';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '../components/ui/button';
+import { Button } from '../components/UI/button';
 
 const SignUp = () => {
   const navigate = useNavigate();

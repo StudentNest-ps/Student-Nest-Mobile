@@ -8,7 +8,7 @@ import { BlogHero } from '../components/Blog/BlogHero';
 import { BlogCarousel } from '../components/Blog/BlogCarousel';
 import { ErrorState } from '../components/UI/ErrorState';
 import { LoadingState } from '../components/UI/LoadingState';
-import { Button } from '../components/ui/button';
+import { Button } from '../components/UI/button';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
 
 // Wrapped component that uses auth context

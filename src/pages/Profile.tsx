@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { MobileLayout } from '../components/Layout/MobileLayout';
-import { Button } from '../components/ui/button';
+import { Button } from '../components/UI/button';
 import { User, Settings, Bell, LogOut, Building, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AccountSettingsModal } from '../components/Profile/AccountSettingsModal';

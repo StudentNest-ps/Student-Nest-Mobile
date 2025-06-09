@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { MobileLayout } from '../components/Layout/MobileLayout';
-import { Button } from '../components/ui/button';
+import { Button } from '../components/UI/button';
 import { useNavigate } from 'react-router-dom';
 import { Wifi, Shield, Star, Home, Coffee, Clock } from 'lucide-react';
 import { ApartmentRecommendations } from '../components/Apartments/ApartmentRecommendations';

@@ -1,14 +1,23 @@
 
 import React, { useState } from 'react';
 import { X, Save } from 'lucide-react';
-import { Button } from '../ui/button';
+import { Button } from '../UI/button';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'sonner';
+import api from '../../services/api';
+
+// Define an interface for the API update data
+interface UserUpdateData {
+  username?: string;
+  phoneNumber?: string;
+  password?: string;
+}
 
 interface User {
   id: string;
-  name?: string;
+  username?: string;
   email?: string;
+  phoneNumber?: string;
 }
 
 interface AccountSettingsModalProps {
@@ -19,10 +28,10 @@ interface AccountSettingsModalProps {
 export const AccountSettingsModal = ({ user, onClose }: AccountSettingsModalProps) => {
   const { updateUserProfile } = useAuth();
   const [formData, setFormData] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    phone: '',
-    address: ''
+    username: user?.username || '',
+    phoneNumber: user?.phoneNumber || '',
+    password: '',
+    confirmPassword: ''
   });
   const [isSaving, setIsSaving] = useState(false);
   
@@ -34,7 +43,7 @@ export const AccountSettingsModal = ({ user, onClose }: AccountSettingsModalProp
     }));
   };
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!user?.id) {
@@ -42,20 +51,47 @@ export const AccountSettingsModal = ({ user, onClose }: AccountSettingsModalProp
       return;
     }
     
+    if (formData.password && formData.password !== formData.confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+    
     setIsSaving(true);
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      // Prepare data for API call - only include fields with values
+      const updateData: UserUpdateData = {};
+      if (formData.username) updateData.username = formData.username;
+      if (formData.phoneNumber) updateData.phoneNumber = formData.phoneNumber;
+      if (formData.password) updateData.password = formData.password;
+      
+      // Call the API using PUT instead of PATCH
+      await api.put('/general/me', updateData);
+      
+      // Update local state - convert to the format expected by updateUserProfile
       updateUserProfile({
         id: user.id,
-        name: formData.name,
-        email: formData.email
+        // Map username to name for AuthContext compatibility
+        name: formData.username,
+        // Keep email unchanged
+        email: user.email
       });
       
-      setIsSaving(false);
       toast.success("Profile updated successfully");
       onClose();
-    }, 1000);
+    } catch (error: unknown) {
+      // Type guard for error with response property
+      if (error && typeof error === 'object' && 'response' in error && 
+          error.response && typeof error.response === 'object' && 'data' in error.response &&
+          error.response.data && typeof error.response.data === 'object' && 'message' in error.response.data) {
+        toast.error(String(error.response.data.message));
+      } else {
+        toast.error("Failed to update profile");
+        console.error("Update profile error:", error);
+      }
+    } finally {
+      setIsSaving(false);
+    }
   };
   
   return (
@@ -77,26 +113,12 @@ export const AccountSettingsModal = ({ user, onClose }: AccountSettingsModalProp
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div className="space-y-2">
             <label className="block text-sm font-medium">
-              Full Name
+              Username
             </label>
             <input 
               type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className="w-full p-2 border border-border rounded-md bg-background"
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <label className="block text-sm font-medium">
-              Email Address
-            </label>
-            <input 
-              type="email"
-              name="email"
-              value={formData.email}
+              name="username"
+              value={formData.username}
               onChange={handleChange}
               className="w-full p-2 border border-border rounded-md bg-background"
               required
@@ -109,25 +131,40 @@ export const AccountSettingsModal = ({ user, onClose }: AccountSettingsModalProp
             </label>
             <input 
               type="tel"
-              name="phone"
-              value={formData.phone}
+              name="phoneNumber"
+              value={formData.phoneNumber}
               onChange={handleChange}
               className="w-full p-2 border border-border rounded-md bg-background"
-              placeholder="Optional"
+              required
             />
           </div>
           
           <div className="space-y-2">
             <label className="block text-sm font-medium">
-              Address
+              New Password (leave blank to keep current)
             </label>
             <input 
-              type="text"
-              name="address"
-              value={formData.address}
+              type="password"
+              name="password"
+              value={formData.password}
               onChange={handleChange}
               className="w-full p-2 border border-border rounded-md bg-background"
-              placeholder="Optional"
+              placeholder="••••••••"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <label className="block text-sm font-medium">
+              Confirm New Password
+            </label>
+            <input 
+              type="password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              className="w-full p-2 border border-border rounded-md bg-background"
+              placeholder="••••••••"
+              disabled={!formData.password}
             />
           </div>
           

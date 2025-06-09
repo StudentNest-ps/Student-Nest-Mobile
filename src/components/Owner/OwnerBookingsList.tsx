@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { X, Calendar, User, Mail, Phone } from 'lucide-react';
-import { Button } from '../ui/button';
+import { Button } from '../UI/button';
 import { format } from 'date-fns';
 
 interface Booking {
