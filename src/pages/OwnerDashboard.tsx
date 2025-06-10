@@ -20,7 +20,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle
-} from "../components/ui/dialog";
+} from "../components/UI/dialog";
 import { ownerService, Property } from "../services/owner.service";
 
 const OwnerDashboard = () => {
@@ -66,23 +66,23 @@ const OwnerDashboard = () => {
 
   const unreadCount = mockNotifications.filter((n) => !n.read).length;
 
+  const fetchProperties = async () => {
+    try {
+      setLoading(true);
+      const data = await ownerService.getMyProperties();
+      console.log(data);
+
+      setProperties(data);
+      setError(null);
+    } catch (err) {
+      setError("Failed to load properties");
+      toast.error("Failed to load properties");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchProperties = async () => {
-      try {
-        setLoading(true);
-        const data = await ownerService.getMyProperties();
-        console.log(data);
-
-        setProperties(data);
-        setError(null);
-      } catch (err) {
-        setError("Failed to load properties");
-        toast.error("Failed to load properties");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchProperties();
   }, []);
 
@@ -258,7 +258,11 @@ const OwnerDashboard = () => {
 
       {/* Modals */}
       {showApartments && (
-        <OwnerApartmentsList apartments={properties} onClose={() => setShowApartments(false)} />
+        <OwnerApartmentsList 
+          apartments={properties} 
+          onClose={() => setShowApartments(false)} 
+          onPropertyUpdated={fetchProperties} 
+        />
       )}
 
       {showBookings && (
