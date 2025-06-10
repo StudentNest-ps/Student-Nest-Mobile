@@ -9,7 +9,7 @@ interface ApartmentProps {
     id: string;
     name: string;
     location: string;
-    price: string;
+    price: number;
     bedrooms: number;
     bathrooms: number;
     sqft: number;
