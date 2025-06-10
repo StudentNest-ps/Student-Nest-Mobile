@@ -121,7 +121,7 @@ const ProfilePage = () => {
               <span>Owner Dashboard</span>
             </Button>
             
-            <Popover>
+            {/* <Popover>
               <PopoverTrigger asChild>
                 <Button 
                   variant="outline"
@@ -155,7 +155,7 @@ const ProfilePage = () => {
                   </Button>
                 </div>
               </PopoverContent>
-            </Popover>
+            </Popover> */}
           </div>
         )}
         
