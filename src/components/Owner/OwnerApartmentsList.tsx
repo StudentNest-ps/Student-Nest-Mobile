@@ -120,11 +120,27 @@ export const OwnerApartmentsList = ({
                       whileHover={{ scale: 1.02 }}
                     >
                       <div className="flex gap-6">
-                        <img
-                          src={apartment.image}
-                          alt={apartment.title}
-                          className="w-32 h-32 object-cover rounded-lg border-2 border-gray-700"
-                        />
+                        <div className="w-32 h-32 min-w-[8rem] overflow-hidden rounded-lg border-2 border-gray-700 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                          {apartment.image ? (
+                            <img
+                              src={apartment.image}
+                              alt={apartment.title}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                // Hide the broken image
+                                e.currentTarget.style.display = 'none';
+                                // Show parent div with background color
+                                e.currentTarget.parentElement.innerHTML = `<div class="flex items-center justify-center w-full h-full text-gray-500 dark:text-gray-400">
+                                  <span>${apartment.title.charAt(0)}</span>
+                                </div>`;
+                              }}
+                            />
+                          ) : (
+                            <div className="flex items-center justify-center w-full h-full text-gray-500 dark:text-gray-400">
+                              <span>{apartment.title.charAt(0)}</span>
+                            </div>
+                          )}
+                        </div>
                         <div className="flex-1">
                           <div className="flex justify-between items-start">
                             <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
