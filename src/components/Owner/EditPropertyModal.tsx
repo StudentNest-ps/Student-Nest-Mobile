@@ -243,11 +243,35 @@ export const EditPropertyModal = ({ onClose, property, onPropertyUpdated }: Edit
           {/* Image URL */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Image URL</label>
-            <Input 
-              value={propertyData.image} 
-              onChange={(e) => setPropertyData(p => ({ ...p, image: e.target.value }))} 
-              className="rounded-md" 
-            />
+            <div className="flex gap-4 items-center">
+              <Input 
+                value={propertyData.image} 
+                onChange={(e) => setPropertyData(p => ({ ...p, image: e.target.value }))} 
+                className="rounded-md flex-1" 
+                placeholder="Enter image URL or leave empty"
+              />
+              {propertyData.image ? (
+                <div className="w-16 h-16 rounded-md overflow-hidden border border-gray-300 dark:border-gray-700">
+                  <img 
+                    src={propertyData.image} 
+                    alt="Property preview" 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      // Hide the broken image
+                      e.currentTarget.style.display = 'none';
+                      // Show parent div with background color
+                      e.currentTarget.parentElement.innerHTML = `<div class="flex items-center justify-center w-full h-full text-gray-500 dark:text-gray-400">
+                        <span>${propertyData.title.charAt(0)}</span>
+                      </div>`;
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="w-16 h-16 rounded-md overflow-hidden border border-gray-300 dark:border-gray-700 flex items-center justify-center bg-gray-200 dark:bg-gray-700">
+                  <span className="text-gray-500 dark:text-gray-400">{propertyData.title.charAt(0)}</span>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex gap-3">
