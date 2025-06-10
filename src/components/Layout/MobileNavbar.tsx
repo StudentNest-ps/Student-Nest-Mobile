@@ -32,7 +32,7 @@ export const MobileNavbar = () => {
             </Button>
           )}
           <div className="text-gradient font-bold text-xl">
-            ApartmentFinder
+            StudentNest
           </div>
         </div>
         

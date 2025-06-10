@@ -14,7 +14,7 @@ const HomePage = () => {
       <div className="space-y-8">
         {/* Hero Section */}
         <div className="bg-card p-6 rounded-xl border border-border shadow-sm">
-          <h1 className="text-3xl font-bold text-gradient">ApartmentFinder</h1>
+          <h1 className="text-3xl font-bold text-gradient">StudentNest</h1>
           <p className="text-muted-foreground mt-2 mb-6">
             Finding your perfect home has never been easier. Browse, compare, and book apartments 
             all in one place.
