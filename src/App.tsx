@@ -16,6 +16,7 @@ import NotFound from './pages/NotFound';
 import BookingConfirmation from './pages/BookingConfirmation';
 import OwnerDashboard from './pages/OwnerDashboard';
 import Bookings from './pages/Bookings';
+import PaymentSuccess from './pages/PaymentSuccess';
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
             <Route path="/booking/:id" element={<BookingConfirmation />} />
             <Route path="/owner-dashboard" element={<OwnerDashboard />} />
             <Route path="/bookings" element={<Bookings />} />
+            <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

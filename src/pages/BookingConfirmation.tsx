@@ -2,12 +2,14 @@
 import React, { useState } from 'react';
 import { MobileLayout } from '../components/Layout/MobileLayout';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Button } from '../components/ui/button';
+import { Button } from '../components/UI/button';
 import { Calendar, Check, MapPin, Info, CreditCard, ArrowLeft } from 'lucide-react';
 import { Calendar as CalendarComponent } from '../components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
 import { format, addDays, differenceInDays, differenceInMonths, addMonths } from 'date-fns';
 import { toast } from 'sonner';
+import { bookingService } from '../services/booking.service';
+import { lahzaPaymentsService } from '../services/lahzaPayments.service';
 
 const BookingConfirmation = () => {
   const location = useLocation();
@@ -88,19 +90,50 @@ const BookingConfirmation = () => {
     return !Object.values(errors).some(error => error);
   };
 
-  const handleProcessPayment = () => {
+  // Replace the handleProcessPayment function with this:
+  
+  const handleProcessPayment = async () => {
     if (!validateForm()) {
       toast.error("Please fill in all payment fields");
       return;
     }
     
     setIsProcessingPayment(true);
-    // Simulate payment processing
-    setTimeout(() => {
+    
+    try {
+      // First create the booking
+      const bookingData = {
+        studentId: localStorage.getItem('user-id'),
+        propertyId: apartment._id,
+        dateFrom: format(startDate, 'yyyy-MM-dd'),
+        dateTo: format(endDate, 'yyyy-MM-dd')
+      };
+      
+      const bookingSuccess = await bookingService.bookProperty(bookingData);
+      
+      if (bookingSuccess) {
+        // Get the latest bookings to find the ID of the one we just created
+        const bookings = await bookingService.getMyBookings();
+        const newBooking = bookings.find(b => 
+          b.apartment.id === apartment._id && 
+          b.status === 'pending'
+        );
+        
+        if (newBooking) {
+          // Initiate payment with Lahza
+          await lahzaPaymentsService.payForBooking(newBooking.id);
+          // The user will be redirected to Lahza's checkout page
+        } else {
+          throw new Error('Could not find the newly created booking');
+        }
+      } else {
+        throw new Error('Failed to create booking');
+      }
+    } catch (error) {
+      console.error('Payment process failed:', error);
       setIsProcessingPayment(false);
-      setPaymentStep('confirmation');
-      toast.success("Payment successful!");
-    }, 1500);
+      toast.error(error.message || 'Payment process failed');
+    }
   };
   
   const handleConfirmBooking = () => {
