@@ -1,34 +1,64 @@
 
-import React from 'react';
-import { X, Calendar, User, Mail, Phone } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Calendar, User, Mail, Phone, Check, X as XIcon } from 'lucide-react';
 import { Button } from '../UI/button';
 import { format } from 'date-fns';
-
-interface Booking {
-  id: string;
-  apartmentName: string;
-  studentName: string;
-  studentEmail: string;
-  moveInDate: string;
-  moveOutDate: string;
-  status: 'confirmed' | 'pending' | 'cancelled';
-  totalPrice: string;
-  createdAt: string;
-}
+import { bookingService, Booking } from '../../services/booking.service';
+import { toast } from 'sonner';
 
 interface OwnerBookingsListProps {
   onClose: () => void;
 }
 
 export const OwnerBookingsList = ({ onClose }: OwnerBookingsListProps) => {
-  // UI-only implementation with empty data
-  const bookings: Booking[] = [];
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  useEffect(() => {
+    fetchOwnerBookings();
+  }, []);
+  
+  const fetchOwnerBookings = async () => {
+    try {
+      setLoading(true);
+      const data = await bookingService.getOwnerBookings();
+      setBookings(data);
+      setError(null);
+    } catch (err) {
+      setError('Failed to load bookings');
+      toast.error('Failed to load bookings');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const handleApproveBooking = async (bookingId: string) => {
+    try {
+      await bookingService.approveBooking(bookingId);
+      toast.success('Booking confirmed successfully');
+      fetchOwnerBookings(); // Refresh the list
+    } catch (err) {
+      toast.error('Failed to confirm booking');
+    }
+  };
+  
+  const handleRejectBooking = async (bookingId: string) => {
+    try {
+      await bookingService.rejectBooking(bookingId);
+      toast.success('Booking rejected successfully');
+      fetchOwnerBookings(); // Refresh the list
+    } catch (err) {
+      toast.error('Failed to reject booking');
+    }
+  };
   
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'confirmed': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
       case 'pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
       case 'cancelled': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+      case 'already_booked': return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400';
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400';
     }
   };
@@ -50,27 +80,43 @@ export const OwnerBookingsList = ({ onClose }: OwnerBookingsListProps) => {
         </div>
         
         <div className="p-6">
-          {bookings.length > 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : error ? (
+            <div className="text-center py-8 text-gray-600 dark:text-gray-400">
+              <XIcon className="h-12 w-12 mx-auto mb-4 text-red-500" />
+              <p className="mb-4">{error}</p>
+              <Button onClick={fetchOwnerBookings}>Try Again</Button>
+            </div>
+          ) : bookings.length > 0 ? (
             <div className="space-y-4">
               {bookings.map((booking) => (
                 <div key={booking.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <h3 className="font-semibold text-lg text-gray-900 dark:text-white">{booking.apartmentName}</h3>
+                      <h3 className="font-semibold text-lg text-gray-900 dark:text-white">{booking.apartment.name}</h3>
                       <div className="mt-2 space-y-2">
                         <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                           <User className="h-4 w-4" />
-                          <span className="font-medium text-gray-900 dark:text-white">{booking.studentName}</span>
+                          <span className="font-medium text-gray-900 dark:text-white">{booking.student.name}</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                           <Mail className="h-4 w-4" />
-                          <span>{booking.studentEmail}</span>
+                          <span>{booking.student.email}</span>
                         </div>
+                        {booking.student.phone && (
+                          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                            <Phone className="h-4 w-4" />
+                            <span>{booking.student.phone}</span>
+                          </div>
+                        )}
                         <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                           <Calendar className="h-4 w-4" />
                           <span>
-                            {booking.moveInDate && format(new Date(booking.moveInDate), 'MMM d, yyyy')} - 
-                            {booking.moveOutDate && format(new Date(booking.moveOutDate), 'MMM d, yyyy')}
+                            {format(new Date(booking.checkIn), 'MMM d, yyyy')} - 
+                            {format(new Date(booking.checkOut), 'MMM d, yyyy')}
                           </span>
                         </div>
                       </div>
@@ -79,9 +125,9 @@ export const OwnerBookingsList = ({ onClose }: OwnerBookingsListProps) => {
                       <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(booking.status)}`}>
                         {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
                       </span>
-                      <p className="font-bold text-blue-600 dark:text-blue-400 mt-2">{booking.totalPrice}</p>
+                      <p className="font-bold text-blue-600 dark:text-blue-400 mt-2">${booking.totalAmount.toLocaleString()}</p>
                       <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                        Booked {booking.createdAt && format(new Date(booking.createdAt), 'MMM d, yyyy')}
+                        Booked {booking.bookingDate && format(new Date(booking.bookingDate), 'MMM d, yyyy')}
                       </p>
                     </div>
                   </div>
@@ -89,15 +135,28 @@ export const OwnerBookingsList = ({ onClose }: OwnerBookingsListProps) => {
                   <div className="flex gap-2 mt-4">
                     {booking.status === 'pending' && (
                       <>
-                        <Button size="sm" className="bg-green-600 hover:bg-green-700">
-                          Confirm
+                        <Button 
+                          size="sm" 
+                          className="bg-green-600 hover:bg-green-700 flex items-center gap-1"
+                          onClick={() => handleApproveBooking(booking.id)}
+                        >
+                          <Check className="h-4 w-4" /> Confirm
                         </Button>
-                        <Button size="sm" variant="outline" className="text-red-600">
-                          Decline
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="text-red-600 flex items-center gap-1"
+                          onClick={() => handleRejectBooking(booking.id)}
+                        >
+                          <XIcon className="h-4 w-4" /> Decline
                         </Button>
                       </>
                     )}
-                    <Button size="sm" variant="outline">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      className="ml-auto"
+                    >
                       Contact Student
                     </Button>
                   </div>
