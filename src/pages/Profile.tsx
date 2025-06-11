@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { AccountSettingsModal } from '../components/Profile/AccountSettingsModal';
 import { toast } from 'sonner';
 import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/UI/dialog';
 import { useAuth } from '../contexts/AuthContext';
 
 const ProfilePage = () => {
@@ -111,51 +111,16 @@ const ProfilePage = () => {
         
         {/* Owner Dashboard Button - Only show for owners */}
         {user?.role === 'owner' && (
-          <div className="grid grid-cols-2 gap-3">
-            <Button 
-              variant="outline"
-              className="flex flex-col items-center justify-center h-24 bg-card border border-border"
+          <div className="space-y-3">
+            <div 
+              className="p-4 bg-card rounded-lg border border-border flex items-center justify-between cursor-pointer"
               onClick={() => navigate('/owner-dashboard')}
             >
-              <Building className="h-6 w-6 mb-2 text-apartment dark:text-primary" />
-              <span>Owner Dashboard</span>
-            </Button>
-            
-            {/* <Popover>
-              <PopoverTrigger asChild>
-                <Button 
-                  variant="outline"
-                  className="flex flex-col items-center justify-center h-24 bg-card border border-border"
-                >
-                  <MessageCircle className="h-6 w-6 mb-2 text-apartment dark:text-primary" />
-                  <span>My Properties</span>
-                  <span className="text-xs text-muted-foreground">{ownerApartments.length} listed</span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 p-4 w-80">
-                <div className="space-y-2">
-                  <h3 className="font-medium text-lg text-gray-900 dark:text-white">Your Properties</h3>
-                  <ul className="space-y-2 max-h-60 overflow-auto">
-                    {ownerApartments.length > 0 ? (
-                      ownerApartments.map(apt => (
-                        <li key={apt.id} className="p-2 bg-gray-100 dark:bg-gray-800 rounded-md">
-                          <p className="font-medium text-gray-900 dark:text-white">{apt.name}</p>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">{apt.location} - {apt.price}</p>
-                        </li>
-                      ))
-                    ) : (
-                      <li className="p-2 text-center text-gray-600 dark:text-gray-400">No properties found</li>
-                    )}
-                  </ul>
-                  <Button 
-                    className="w-full mt-2" 
-                    onClick={() => navigate('/owner-dashboard')}
-                  >
-                    Manage Properties
-                  </Button>
-                </div>
-              </PopoverContent>
-            </Popover> */}
+              <div className="flex items-center gap-3">
+                <Building className="text-apartment dark:text-primary h-5 w-5" />
+                <span>Owner Dashboard</span>
+              </div>
+            </div>
           </div>
         )}
         
