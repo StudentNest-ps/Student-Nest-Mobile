@@ -37,53 +37,9 @@ export const ApartmentDetailsModal = ({ apartment, onClose, onBookNow }: Apartme
   const [isProcessingBooking, setIsProcessingBooking] = useState(false);
   const { user } = useAuth();
   
-  const handleBookNow = async () => {
-    if (!user) {
-      toast.error("Please sign in to book a property");
-      navigate('/signin');
-      return;
-    }
-    
-    if (user.role === 'owner') {
-      toast.info("As an owner, you cannot book properties");
-      return;
-    }
-    
-    setIsProcessingBooking(true);
-    
-    try {
-      // Create a booking with status 'pending'
-      const bookingData = {
-        studentId: localStorage.getItem('user-id'),
-        propertyId: apartment.id,
-        dateFrom: new Date().toISOString().split('T')[0], // Today's date
-        dateTo: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0] // 1 year from now
-      };
-      
-      const bookingSuccess = await bookingService.bookProperty(bookingData);
-      
-      if (bookingSuccess) {
-        // Get the latest bookings to find the ID of the one we just created
-        const bookings = await bookingService.getMyBookings();
-        const newBooking = bookings.find(b => 
-          b.apartment.id === apartment.id && 
-          b.status === 'pending'
-        );
-        
-        if (newBooking) {
-          // Initiate payment with Lahza
-          await lahzaPaymentsService.payForBooking(newBooking.id);
-          // The user will be redirected to Lahza's checkout page
-        } else {
-          throw new Error('Could not find the newly created booking');
-        }
-      } else {
-        throw new Error('Failed to create booking');
-      }
-    } catch (error) {
-      console.error('Booking process failed:', error);
-      setIsProcessingBooking(false);
-      toast.error(error.message || 'Booking process failed');
+  const handleBookNow = () => {
+    if (apartment) {
+      navigate(`/booking/${apartment.id}`, { state: { apartment } });
     }
   };
   

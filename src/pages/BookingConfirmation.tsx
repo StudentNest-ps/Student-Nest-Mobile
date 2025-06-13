@@ -90,21 +90,14 @@ const BookingConfirmation = () => {
     return !Object.values(errors).some(error => error);
   };
 
-  // Replace the handleProcessPayment function with this:
-  
   const handleProcessPayment = async () => {
-    if (!validateForm()) {
-      toast.error("Please fill in all payment fields");
-      return;
-    }
-    
     setIsProcessingPayment(true);
     
     try {
-      // First create the booking
+      // Create the booking
       const bookingData = {
         studentId: localStorage.getItem('user-id'),
-        propertyId: apartment._id,
+        propertyId: apartment.id, // Changed from _id to id
         dateFrom: format(startDate, 'yyyy-MM-dd'),
         dateTo: format(endDate, 'yyyy-MM-dd')
       };
@@ -112,27 +105,16 @@ const BookingConfirmation = () => {
       const bookingSuccess = await bookingService.bookProperty(bookingData);
       
       if (bookingSuccess) {
-        // Get the latest bookings to find the ID of the one we just created
-        const bookings = await bookingService.getMyBookings();
-        const newBooking = bookings.find(b => 
-          b.apartment.id === apartment._id && 
-          b.status === 'pending'
-        );
-        
-        if (newBooking) {
-          // Initiate payment with Lahza
-          await lahzaPaymentsService.payForBooking(newBooking.id);
-          // The user will be redirected to Lahza's checkout page
-        } else {
-          throw new Error('Could not find the newly created booking');
-        }
+        // Navigate to bookings page with success message
+        navigate('/bookings');
+        toast.success(`Booking request for ${apartment.name} has been sent to the owner!`);
       } else {
         throw new Error('Failed to create booking');
       }
     } catch (error) {
-      console.error('Payment process failed:', error);
+      console.error('Booking process failed:', error);
       setIsProcessingPayment(false);
-      toast.error(error.message || 'Payment process failed');
+      toast.error(error.message || 'Booking process failed');
     }
   };
   
@@ -370,7 +352,7 @@ const BookingConfirmation = () => {
           onClick={handleProcessPayment}
           disabled={isProcessingPayment}
         >
-          {isProcessingPayment ? "Processing..." : "Confirm Payment"}
+          {isProcessingPayment ? "Processing..." : "Submit Booking Request"}
         </Button>
       </div>
     );
