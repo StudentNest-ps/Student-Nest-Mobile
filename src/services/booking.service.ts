@@ -64,7 +64,7 @@ class BookingService {
 
   async approveBooking(bookingId: string): Promise<boolean> {
     try {
-      const response = await api.put(`/bookings/${bookingId}/approve`);
+      const response = await api.patch(`/bookings/${bookingId}/approve`);
       return response.status === 200;
     } catch (error) {
       console.error('Failed to approve booking:', error);

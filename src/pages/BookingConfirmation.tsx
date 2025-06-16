@@ -94,27 +94,18 @@ const BookingConfirmation = () => {
     setIsProcessingPayment(true);
     
     try {
-      // Create the booking
-      const bookingData = {
-        studentId: localStorage.getItem('user-id'),
-        propertyId: apartment.id, // Changed from _id to id
-        dateFrom: format(startDate, 'yyyy-MM-dd'),
-        dateTo: format(endDate, 'yyyy-MM-dd')
-      };
+      // The booking is already created and approved, so we just need to process payment
+      // You can add the payment processing logic here
       
-      const bookingSuccess = await bookingService.bookProperty(bookingData);
-      
-      if (bookingSuccess) {
-        // Navigate to bookings page with success message
-        navigate('/bookings');
-        toast.success(`Booking request for ${apartment.name} has been sent to the owner!`);
-      } else {
-        throw new Error('Failed to create booking');
-      }
+      // For now, we'll just simulate a successful payment
+      setTimeout(() => {
+        setPaymentStep('confirmation');
+        setIsProcessingPayment(false);
+      }, 2000);
     } catch (error) {
-      console.error('Booking process failed:', error);
+      console.error('Payment process failed:', error);
       setIsProcessingPayment(false);
-      toast.error(error.message || 'Booking process failed');
+      toast.error(error.message || 'Payment process failed');
     }
   };
   

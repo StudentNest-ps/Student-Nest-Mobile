@@ -62,7 +62,8 @@ const PaymentSuccess = () => {
   }, [location.search]);
   
   const handleViewBookings = () => {
-    navigate('/bookings');
+    // Change this to navigate to the home page instead
+    navigate('/');
   };
   
   const handleGoBack = () => {
@@ -92,7 +93,8 @@ const PaymentSuccess = () => {
             <p className="text-muted-foreground mb-6 text-center">
               Your booking has been confirmed. You can now view it in your bookings.
             </p>
-            <Button onClick={handleViewBookings}>View My Bookings</Button>
+            {/* Update the button text to reflect the new action */}
+            <Button onClick={handleViewBookings}>Back to Home</Button>
           </>
         ) : (
           <>
