@@ -2,12 +2,14 @@
 import React, { useState } from 'react';
 import { MobileLayout } from '../components/Layout/MobileLayout';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Button } from '../components/ui/button';
+import { Button } from '../components/UI/button';
 import { Calendar, Check, MapPin, Info, CreditCard, ArrowLeft } from 'lucide-react';
 import { Calendar as CalendarComponent } from '../components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
 import { format, addDays, differenceInDays, differenceInMonths, addMonths } from 'date-fns';
 import { toast } from 'sonner';
+import { bookingService } from '../services/booking.service';
+import { lahzaPaymentsService } from '../services/lahzaPayments.service';
 
 const BookingConfirmation = () => {
   const location = useLocation();
@@ -88,19 +90,23 @@ const BookingConfirmation = () => {
     return !Object.values(errors).some(error => error);
   };
 
-  const handleProcessPayment = () => {
-    if (!validateForm()) {
-      toast.error("Please fill in all payment fields");
-      return;
-    }
-    
+  const handleProcessPayment = async () => {
     setIsProcessingPayment(true);
-    // Simulate payment processing
-    setTimeout(() => {
+    
+    try {
+      // The booking is already created and approved, so we just need to process payment
+      // You can add the payment processing logic here
+      
+      // For now, we'll just simulate a successful payment
+      setTimeout(() => {
+        setPaymentStep('confirmation');
+        setIsProcessingPayment(false);
+      }, 2000);
+    } catch (error) {
+      console.error('Payment process failed:', error);
       setIsProcessingPayment(false);
-      setPaymentStep('confirmation');
-      toast.success("Payment successful!");
-    }, 1500);
+      toast.error(error.message || 'Payment process failed');
+    }
   };
   
   const handleConfirmBooking = () => {
@@ -337,7 +343,7 @@ const BookingConfirmation = () => {
           onClick={handleProcessPayment}
           disabled={isProcessingPayment}
         >
-          {isProcessingPayment ? "Processing..." : "Confirm Payment"}
+          {isProcessingPayment ? "Processing..." : "Submit Booking Request"}
         </Button>
       </div>
     );

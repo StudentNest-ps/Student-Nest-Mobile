@@ -62,9 +62,14 @@ class BookingService {
     return response.data;
   }
 
-  async approveBooking(bookingId: string) {
-    const response = await api.patch(`/bookings/${bookingId}/approve`);
-    return response.status === 200;
+  async approveBooking(bookingId: string): Promise<boolean> {
+    try {
+      const response = await api.patch(`/bookings/${bookingId}/approve`);
+      return response.status === 200;
+    } catch (error) {
+      console.error('Failed to approve booking:', error);
+      throw error;
+    }
   }
 
   async rejectBooking(bookingId: string) {
@@ -73,4 +78,4 @@ class BookingService {
   }
 }
 
-export const bookingService = new BookingService(); 
+export const bookingService = new BookingService();

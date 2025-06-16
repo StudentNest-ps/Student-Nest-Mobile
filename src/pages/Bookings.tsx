@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { MobileLayout } from '../components/Layout/MobileLayout';
+import { lahzaPaymentsService } from '../services/lahzaPayments.service';
 import { Calendar, Clock, MapPin, Building, X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/UI/button';
@@ -179,13 +180,14 @@ const Bookings = () => {
                       </p>
                     </div>
                     
-                    {booking.status === 'pending' && (
+                    {booking.status === 'confirmed' && (
                       <Button 
-                        variant="outline" 
+                        variant="default" 
                         size="sm"
-                        onClick={() => handleCancelBooking(booking.id)}
+                        onClick={() => handlePayNow(booking.id)}
+                        className="bg-primary text-white"
                       >
-                        Cancel Booking
+                        Pay Now
                       </Button>
                     )}
                   </div>
@@ -199,4 +201,14 @@ const Bookings = () => {
   );
 };
 
-export default Bookings; 
+export default Bookings;
+
+// Add this function to handle payment
+const handlePayNow = async (bookingId: string) => {
+  try {
+    await lahzaPaymentsService.payForBooking(bookingId);
+    // The user will be redirected to Lahza's checkout page
+  } catch (err) {
+    toast.error('Failed to process payment');
+  }
+};

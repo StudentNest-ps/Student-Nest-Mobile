@@ -6,6 +6,9 @@ import { useNavigate } from 'react-router-dom';
 import { ChatModal } from '../Chat/ChatModal';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'sonner';
+import { bookingService } from '../../services/booking.service';
+import { format, addMonths } from 'date-fns';
+import { lahzaPaymentsService } from '../../services/lahzaPayments.service';
 
 interface Apartment {
   id: string;
@@ -32,13 +35,45 @@ interface ApartmentDetailsModalProps {
 export const ApartmentDetailsModal = ({ apartment, onClose, onBookNow }: ApartmentDetailsModalProps) => {
   const navigate = useNavigate();
   const [showChat, setShowChat] = useState(false);
+  const [isProcessingBooking, setIsProcessingBooking] = useState(false);
   const { user } = useAuth();
   
-  const handleBookNow = () => {
-    if (onBookNow) {
-      onBookNow();
-    } else {
-      navigate(`/booking/${apartment.id}`, { state: { apartment } });
+  const handleBookNow = async () => {
+    if (!user) {
+      toast.error("Please sign in to book this apartment");
+      navigate('/signin');
+      return;
+    }
+    
+    if (user.role === 'owner') {
+      toast.info("As an owner, you cannot book apartments");
+      return;
+    }
+    
+    try {
+      setIsProcessingBooking(true);
+      
+      // Create a pending booking
+      const bookingData = {
+        studentId: localStorage.getItem('user-id'),
+        propertyId: apartment.id,
+        dateFrom: format(new Date(), 'yyyy-MM-dd'),
+        dateTo: format(addMonths(new Date(), 12), 'yyyy-MM-dd') // Default to 12 months
+      };
+      
+      const bookingSuccess = await bookingService.bookProperty(bookingData);
+      
+      if (bookingSuccess) {
+        toast.success(`Booking request for ${apartment.name} has been sent to the owner!`);
+        navigate('/bookings');
+      } else {
+        throw new Error('Failed to create booking');
+      }
+    } catch (error) {
+      console.error('Booking process failed:', error);
+      toast.error(error.message || 'Booking process failed');
+    } finally {
+      setIsProcessingBooking(false);
     }
   };
   
@@ -147,8 +182,9 @@ export const ApartmentDetailsModal = ({ apartment, onClose, onBookNow }: Apartme
             <Button 
               onClick={handleBookNow}
               className="bg-blue-600 hover:bg-blue-700 text-white"
+              disabled={isProcessingBooking}
             >
-              Book Now
+              {isProcessingBooking ? "Processing..." : "Book Now"}
             </Button>
           </div>
         </div>

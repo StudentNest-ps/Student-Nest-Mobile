@@ -1,9 +1,8 @@
 import axios from 'axios';
-import { authService } from './auth.service';
 
 // Create axios instance with base configuration
 const api = axios.create({
-  baseURL: 'https://student-nest-backend.onrender.com/api',
+  baseURL: '/api', // Changed from absolute URL to relative URL
   headers: {
     'Content-Type': 'application/json',
   },
