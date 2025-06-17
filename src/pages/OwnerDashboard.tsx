@@ -22,6 +22,7 @@ import {
   DialogTitle
 } from "../components/UI/dialog";
 import { ownerService, Property } from "../services/owner.service";
+import { OwnerMessagesList } from "../components/Owner/OwnerMessagesList";
 
 const OwnerDashboard = () => {
   const navigate = useNavigate();
@@ -267,6 +268,10 @@ const OwnerDashboard = () => {
 
       {showBookings && (
         <OwnerBookingsList onClose={() => setShowBookings(false)} />
+      )}
+
+      {showMessages && (
+        <OwnerMessagesList onClose={() => setShowMessages(false)} />
       )}
 
       {showAddProperty && (

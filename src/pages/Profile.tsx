@@ -9,12 +9,14 @@ import { toast } from 'sonner';
 import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/UI/dialog';
 import { useAuth } from '../contexts/AuthContext';
+import { StudentMessagesList } from '../components/Student/StudentMessagesList';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [showSettings, setShowSettings] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showMessages, setShowMessages] = useState(false);
   
   // TODO: Replace with your database API calls
   const [ownerApartments, setOwnerApartments] = useState<any[]>([]);
@@ -93,7 +95,7 @@ const ProfilePage = () => {
             </span>
           </div>
           <div className="ml-auto">
-            <Button
+            {/* <Button
               size="icon"
               variant="outline"
               className="relative"
@@ -105,7 +107,7 @@ const ProfilePage = () => {
                   {unreadCount}
                 </span>
               )}
-            </Button>
+            </Button> */}
           </div>
         </div>
         
@@ -126,6 +128,19 @@ const ProfilePage = () => {
         
         {/* Profile Options */}
         <div className="space-y-3">
+          {/* Messages Button - Only show for students */}
+          {user?.role === 'student' && (
+            <div 
+              className="p-4 bg-card rounded-lg border border-border flex items-center justify-between cursor-pointer"
+              onClick={() => setShowMessages(true)}
+            >
+              <div className="flex items-center gap-3">
+                <MessageCircle className="text-apartment dark:text-primary h-5 w-5" />
+                <span>Messages</span>
+              </div>
+            </div>
+          )}
+          
           <div className="p-4 bg-card rounded-lg border border-border flex items-center justify-between cursor-pointer"
             onClick={() => setShowNotifications(true)}
           >
@@ -169,6 +184,11 @@ const ProfilePage = () => {
           user={user}
           onClose={() => setShowSettings(false)}
         />
+      )}
+
+      {/* Student Messages List Modal */}
+      {showMessages && (
+        <StudentMessagesList onClose={() => setShowMessages(false)} />
       )}
 
       <Dialog open={showNotifications} onOpenChange={setShowNotifications}>
