@@ -5,6 +5,8 @@ import { Button } from '../UI/button';
 import { format } from 'date-fns';
 import { bookingService, Booking } from '../../services/booking.service';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface OwnerBookingsListProps {
   onClose: () => void;
@@ -14,6 +16,8 @@ export const OwnerBookingsList = ({ onClose }: OwnerBookingsListProps) => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const { user } = useAuth();
   
   useEffect(() => {
     fetchOwnerBookings();
@@ -156,6 +160,15 @@ export const OwnerBookingsList = ({ onClose }: OwnerBookingsListProps) => {
                       size="sm" 
                       variant="outline"
                       className="ml-auto"
+                      onClick={() => {
+                        navigate('/chat', {
+                          state: {
+                            senderId: user?.id,
+                            receiverId: booking.student.id,
+                            propertyId: booking.apartment.id
+                          }
+                        });
+                      }}
                     >
                       Contact Student
                     </Button>
