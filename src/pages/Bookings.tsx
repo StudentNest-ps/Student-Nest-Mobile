@@ -195,7 +195,7 @@ const Bookings = () => {
                     </div>
                   </div>
 
-                  <div className="mt-4 flex items-center justify-between">
+                  <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                     <div className="space-y-1">
                       <span
                         className={`inline-block px-2 py-1 rounded-full text-xs ${getStatusColor(
@@ -209,26 +209,38 @@ const Bookings = () => {
                       </p>
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2 justify-end sm:justify-start">
                       {booking.status === 'confirmed' && (
                         <Button
                           variant="default"
                           size="sm"
                           onClick={() => handlePayNow(booking.id)}
-                          className="bg-primary text-white"
+                          className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-1 flex-1 min-w-[110px]"
                         >
                           Pay Now
+                        </Button>
+                      )}
+                      {booking.status === 'pending' && (
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => handleCancelBooking(booking.id)}
+                          className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-1 flex-1 min-w-[110px]"
+                        >
+                          Cancel Booking
                         </Button>
                       )}
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleContactOwner(booking)}
+                        className="w-full sm:w-auto"
                       >
                         Contact Owner
                       </Button>
                     </div>
                   </div>
+
                 </div>
               </div>
             ))}

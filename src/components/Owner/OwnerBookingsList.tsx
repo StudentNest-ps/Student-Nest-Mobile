@@ -47,11 +47,11 @@ export const OwnerBookingsList = ({ onClose }: OwnerBookingsListProps) => {
     }
   };
   
-  const handleRejectBooking = async (bookingId: string) => {
+  const handleCancelBooking = async (bookingId: string) => {
     try {
-      await bookingService.rejectBooking(bookingId);
+      await bookingService.cancelBooking(bookingId);
       toast.success('Booking rejected successfully');
-      fetchOwnerBookings(); // Refresh the list
+      fetchOwnerBookings();
     } catch (err) {
       toast.error('Failed to reject booking');
     }
@@ -136,43 +136,45 @@ export const OwnerBookingsList = ({ onClose }: OwnerBookingsListProps) => {
                     </div>
                   </div>
                   
-                  <div className="flex gap-2 mt-4">
+                  <div className="flex flex-wrap gap-2 mt-4">
                     {booking.status === 'pending' && (
                       <>
-                        <Button 
-                          size="sm" 
-                          className="bg-green-600 hover:bg-green-700 flex items-center gap-1"
+                        <Button
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700 flex items-center gap-1 flex-1 min-w-[110px]"
                           onClick={() => handleApproveBooking(booking.id)}
                         >
                           <Check className="h-4 w-4" /> Confirm
                         </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          className="text-red-600 flex items-center gap-1"
-                          onClick={() => handleRejectBooking(booking.id)}
+                        <Button
+                          size="sm"
+                          variant="default"
+                          className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-1 flex-1 min-w-[110px]"
+                          onClick={() => handleCancelBooking(booking.id)}
                         >
                           <XIcon className="h-4 w-4" /> Decline
                         </Button>
                       </>
                     )}
-                    <Button 
-                      size="sm" 
+
+                    <Button
+                      size="sm"
                       variant="outline"
-                      className="ml-auto"
-                      onClick={() => {
+                      className="flex-1 min-w-[130px]"
+                      onClick={() =>
                         navigate('/chat', {
                           state: {
                             senderId: user?.id,
                             receiverId: booking.student.id,
                             propertyId: booking.apartment.id
                           }
-                        });
-                      }}
+                        })
+                      }
                     >
                       Contact Student
                     </Button>
                   </div>
+
                 </div>
               ))}
             </div>
