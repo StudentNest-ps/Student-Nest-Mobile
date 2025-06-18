@@ -6,7 +6,7 @@ import { User, Settings, Bell, LogOut, Building, MessageCircle } from 'lucide-re
 import { useNavigate } from 'react-router-dom';
 import { AccountSettingsModal } from '../components/Profile/AccountSettingsModal';
 import { toast } from 'sonner';
-import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '../components/UI/popover';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/UI/dialog';
 import { useAuth } from '../contexts/AuthContext';
 import { StudentMessagesList } from '../components/Student/StudentMessagesList';

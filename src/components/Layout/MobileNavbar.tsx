@@ -53,13 +53,13 @@ export const MobileNavbar = () => {
               {theme === 'dark' ? 'Light mode' : 'Dark mode'}
             </span>
           </Button>
-          <Button 
+          {/* <Button 
             variant="ghost" 
             size="icon"
             className="text-primary-foreground dark:text-foreground"
           >
             <Bell size={20} />
-          </Button>
+          </Button> */}
         </div>
       </div>
     </header>

@@ -26,6 +26,8 @@ export interface Message {
   updatedAt: string;
 }
 
+import { notificationService } from './notification.service';
+
 class ChatService {
   async getChats() {
     const response = await api.get('/chats');
@@ -39,6 +41,18 @@ class ChatService {
     propertyId: string;
   }) {
     const response = await api.post('/messages', messageData);
+    
+    // Create notification for message recipient
+    try {
+      await notificationService.createNotification({
+        userId: messageData.receiverId,
+        message: `New message: ${messageData.message.substring(0, 30)}${messageData.message.length > 30 ? '...' : ''}`,
+        type: 'message'
+      });
+    } catch (error) {
+      console.error('Failed to create notification:', error);
+    }
+    
     return response.data;
   }
 

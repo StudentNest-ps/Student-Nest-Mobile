@@ -4,10 +4,14 @@ import React, {
   useState,
   useMemo,
   ReactNode,
-  useEffect
+  useEffect,
 } from "react";
 import { authService } from "../services/auth.service";
 import { toast } from "sonner";
+import {
+  notificationService,
+  Notification,
+} from "../services/notification.service";
 
 interface User {
   id: string;
@@ -87,6 +91,10 @@ interface AuthContextType {
   getOwnerBookings: (ownerId: string) => Booking[];
   addApartment: (apartment: Omit<Apartment, "id">) => void;
   createBooking: (booking: Omit<Booking, "id" | "createdAt">) => void;
+  notifications: Notification[];
+  fetchNotifications: () => Promise<void>;
+  markNotificationAsSeen: (notificationId: string) => Promise<void>;
+  hasUnreadNotifications: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -105,8 +113,8 @@ interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  // Load user from localStorage on mount
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
@@ -118,7 +126,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   }, []);
 
-  // Update localStorage whenever user changes
   useEffect(() => {
     if (user) {
       localStorage.setItem("user", JSON.stringify(user));
@@ -140,10 +147,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           id: result.data.userId,
           email: email,
           token: result.data.token,
-          role: result.data.role as "student" | "owner" | "admin"
+          role: result.data.role as "student" | "owner" | "admin",
         };
         localStorage.setItem("auth-token", userData.token);
-        setUser(userData); // will trigger the useEffect to save to localStorage
+        setUser(userData);
         return { success: true, role: result.data.role };
       }
       return { success: false };
@@ -159,6 +166,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       return success;
     } catch {
       toast.error("Something Went Wrong");
+      return false;
     }
   };
 
@@ -169,114 +177,91 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const updateUserProfile = (updatedUser: Partial<User>) => {
     if (!user) return;
-
-    // TODO: Replace with your database API call
-    // fetch('/api/users/update', {
-    //   method: 'PUT',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(updatedUser)
-    // });
-
     const newUserData = { ...user, ...updatedUser };
     setUser(newUserData);
   };
 
   const getMessages = (userId: string): Message[] => {
-    // TODO: Replace with your database API call
-    // const response = await fetch(`/api/messages/${userId}`);
-    // return await response.json();
-
-    console.log("Get messages placeholder - connect to your database API");
+    console.log("Get messages placeholder");
     return [];
   };
 
   const sendMessage = (message: Omit<Message, "id" | "timestamp">) => {
-    // TODO: Replace with your database API call
-    // fetch('/api/messages', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(message)
-    // });
-
-    console.log("Send message placeholder - connect to your database API");
+    console.log("Send message placeholder");
   };
 
   const markMessageAsRead = (messageId: string) => {
-    // TODO: Replace with your database API call
-    // fetch(`/api/messages/${messageId}/read`, {
-    //   method: 'PUT'
-    // });
-
-    console.log(
-      "Mark message as read placeholder - connect to your database API"
-    );
+    console.log("Mark message as read placeholder");
   };
 
   const getAllUsers = (): User[] => {
-    // TODO: Replace with your database API call
-    // const response = await fetch('/api/users');
-    // return await response.json();
-
-    console.log("Get all users placeholder - connect to your database API");
+    console.log("Get all users placeholder");
     return [];
   };
 
   const getOwnerApartments = (ownerId: string): Apartment[] => {
-    // TODO: Replace with your database API call
-    // const response = await fetch(`/api/apartments/owner/${ownerId}`);
-    // return await response.json();
-
-    console.log(
-      "Get owner apartments placeholder - connect to your database API"
-    );
+    console.log("Get owner apartments placeholder");
     return [];
   };
 
   const getAllApartments = (): Apartment[] => {
-    // TODO: Replace with your database API call
-    // const response = await fetch('/api/apartments');
-    // return await response.json();
-
-    console.log(
-      "Get all apartments placeholder - connect to your database API"
-    );
+    console.log("Get all apartments placeholder");
     return [];
   };
 
   const getOwnerBookings = (ownerId: string): Booking[] => {
-    // TODO: Replace with your database API call
-    // const response = await fetch(`/api/bookings/owner/${ownerId}`);
-    // return await response.json();
-
-    console.log(
-      "Get owner bookings placeholder - connect to your database API"
-    );
+    console.log("Get owner bookings placeholder");
     return [];
   };
 
   const addApartment = (apartment: Omit<Apartment, "id">) => {
-    // TODO: Replace with your database API call
-    // fetch('/api/apartments', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(apartment)
-    // });
-
-    console.log("Add apartment placeholder - connect to your database API");
+    console.log("Add apartment placeholder");
   };
 
   const createBooking = (booking: Omit<Booking, "id" | "createdAt">) => {
-    // TODO: Replace with your database API call
-    // fetch('/api/bookings', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(booking)
-    // });
-
-    console.log("Create booking placeholder - connect to your database API");
+    console.log("Create booking placeholder");
   };
 
-  const value = {
+  const fetchNotifications = async () => {
+    if (!user) return;
+    try {
+      const data = await notificationService.getNotifications();
+      setNotifications(data);
+    } catch (error) {
+      console.error("Failed to fetch notifications:", error);
+    }
+  };
+
+  const markNotificationAsSeen = async (notificationId: string) => {
+    try {
+      const success = await notificationService.markAsSeen(notificationId);
+      if (success) {
+        setNotifications((prev) =>
+          prev.map((notification) =>
+            notification._id === notificationId
+              ? { ...notification, seen: true }
+              : notification
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Failed to mark notification as seen:", error);
+    }
+  };
+
+  const hasUnreadNotifications = useMemo(() => {
+    return notifications.some((notification) => !notification.seen);
+  }, [notifications]);
+
+  useEffect(() => {
+    if (user) {
+      fetchNotifications();
+    } else {
+      setNotifications([]);
+    }
+  }, [user]);
+
+  const value: AuthContextType = {
     user,
     isAuthenticated,
     login,
@@ -291,7 +276,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     getAllApartments,
     getOwnerBookings,
     addApartment,
-    createBooking
+    createBooking,
+    notifications,
+    fetchNotifications,
+    markNotificationAsSeen,
+    hasUnreadNotifications,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

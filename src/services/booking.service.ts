@@ -41,10 +41,26 @@ export interface Booking {
   bookingDate: string;
 }
 
+import { notificationService } from './notification.service';
+
 class BookingService {
   async bookProperty(booking: IBooking) {
     const response = await api.post('/bookings', booking);
-    return response.status === 201;
+    
+    if (response.status === 201) {
+      // Create notification for property owner
+      try {
+        await notificationService.createNotification({
+          userId: response.data.apartment.owner.id, // Owner ID
+          message: `New booking request for ${response.data.apartment.name}`,
+          type: 'system'
+        });
+      } catch (error) {
+        console.error('Failed to create notification:', error);
+      }
+      return true;
+    }
+    return false;
   }
 
   async getMyBookings(): Promise<Booking[]> {
@@ -52,20 +68,46 @@ class BookingService {
     return response.data;
   }
 
-  async getOwnerBookings() {
+  async getOwnerBookings(): Promise<Booking[]> {
     const response = await api.get('/bookings/owner');
     return response.data as Booking[];
   }
 
   async cancelBooking(bookingId: string): Promise<Booking> {
     const response = await api.delete(`/bookings/${bookingId}`);
+    
+    // Create notification for property owner
+    try {
+      await notificationService.createNotification({
+        userId: response.data.apartment.owner.id,
+        message: `Booking for ${response.data.apartment.name} has been cancelled`,
+        type: 'system'
+      });
+    } catch (error) {
+      console.error('Failed to create notification:', error);
+    }
+    
     return response.data;
   }
 
   async approveBooking(bookingId: string): Promise<boolean> {
     try {
       const response = await api.patch(`/bookings/${bookingId}/approve`);
-      return response.status === 200;
+      
+      if (response.status === 200) {
+        // Create notification for student
+        try {
+          await notificationService.createNotification({
+            userId: response.data.student.id,
+            message: `Your booking for ${response.data.apartment.name} has been approved`,
+            type: 'system'
+          });
+        } catch (error) {
+          console.error('Failed to create notification:', error);
+        }
+        return true;
+      }
+      return false;
     } catch (error) {
       console.error('Failed to approve booking:', error);
       throw error;
@@ -74,6 +116,20 @@ class BookingService {
 
   async rejectBooking(bookingId: string) {
     const response = await api.patch(`/bookings/${bookingId}/reject`);
+    
+    if (response.status === 200) {
+      // Create notification for student
+      try {
+        await notificationService.createNotification({
+          userId: response.data.student.id,
+          message: `Your booking for ${response.data.apartment.name} has been rejected`,
+          type: 'system'
+        });
+      } catch (error) {
+        console.error('Failed to create notification:', error);
+      }
+    }
+    
     return response.status === 200;
   }
 }
