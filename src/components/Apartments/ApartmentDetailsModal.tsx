@@ -1,14 +1,12 @@
 
 import React, { useState } from 'react';
-import { X, MapPin, Bed, Bath, Calendar, MessageCircle } from 'lucide-react';
+import { X, MapPin, Calendar, MessageCircle } from 'lucide-react';
 import { Button } from '../UI/button';
 import { useNavigate } from 'react-router-dom';
-import { ChatModal } from '../Chat/ChatModal';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'sonner';
 import { bookingService } from '../../services/booking.service';
 import { format, addMonths } from 'date-fns';
-import { lahzaPaymentsService } from '../../services/lahzaPayments.service';
 
 interface Apartment {
   id: string;
@@ -24,6 +22,8 @@ interface Apartment {
   hasParking?: boolean;
   ownerId?: string;
   ownerName?: string;
+  availableFrom?: string;
+  availableTo?: string;
 }
 
 interface ApartmentDetailsModalProps {
@@ -89,11 +89,29 @@ export const ApartmentDetailsModal = ({ apartment, onClose, onBookNow }: Apartme
       return;
     }
     
-    setShowChat(true);
+    // Use the same navigation approach as in Bookings.tsx
+    navigate('/chat', {
+      state: {
+        senderId: user?.id,
+        receiverId: apartment.ownerId,
+        propertyId: apartment.id
+      }
+    });
   };
   
   const ownerId = apartment.ownerId || 'owner-1';
-  const ownerName = apartment.ownerName || 'Apartment Owner';
+  // Remove this line that sets a default owner name
+  // const ownerName = apartment.ownerName || 'Apartment Owner';
+  
+  // Format availability dates
+  const formatAvailability = () => {
+    if (apartment.availableFrom && apartment.availableTo) {
+      const fromDate = new Date(apartment.availableFrom);
+      const toDate = new Date(apartment.availableTo);
+      return `${format(fromDate, 'MMM d, yyyy')} - ${format(toDate, 'MMM d, yyyy')}`;
+    }
+    return 'Available immediately';
+  };
   
   return (
     <div className="fixed inset-0 z-50 flex justify-center items-center p-4 bg-black/80" onClick={onClose}>
@@ -126,33 +144,11 @@ export const ApartmentDetailsModal = ({ apartment, onClose, onBookNow }: Apartme
             <p>{apartment.location}</p>
           </div>
           
-          <div className="grid grid-cols-3 gap-4 mt-6 text-sm">
-            <div className="flex flex-col items-center p-3 bg-gray-100 dark:bg-gray-800 rounded-lg">
-              <Bed className="h-5 w-5 text-blue-600 dark:text-blue-400 mb-1" />
-              <p className="text-gray-900 dark:text-white">{apartment.bedrooms} {apartment.bedrooms === 0 ? 'Studio' : apartment.bedrooms === 1 ? 'Bed' : 'Beds'}</p>
-            </div>
-            
-            <div className="flex flex-col items-center p-3 bg-gray-100 dark:bg-gray-800 rounded-lg">
-              <Bath className="h-5 w-5 text-blue-600 dark:text-blue-400 mb-1" />
-              <p className="text-gray-900 dark:text-white">{apartment.bathrooms} {apartment.bathrooms === 1 ? 'Bath' : 'Baths'}</p>
-            </div>
-            
-            <div className="flex flex-col items-center p-3 bg-gray-100 dark:bg-gray-800 rounded-lg">
-              <span className="font-semibold text-blue-600 dark:text-blue-400 mb-1">
-                {apartment.sqft}
-              </span>
-              <p className="text-gray-900 dark:text-white">sq ft</p>
-            </div>
-          </div>
-          
           <div className="mt-6">
             <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white">Description</h3>
             <p className="text-gray-600 dark:text-gray-400">
               {apartment.description || 
-               `This ${apartment.bedrooms === 0 ? 'studio' : apartment.bedrooms + ' bedroom'} 
-                apartment offers ${apartment.sqft} square feet of living space in a prime
-                location. With ${apartment.bathrooms} bathroom${apartment.bathrooms !== 1 ? 's' : ''} 
-                and modern amenities, it's ready for immediate occupancy.`}
+               `This apartment is located in a prime location and is ready for immediate occupancy.`}
             </p>
           </div>
           
@@ -160,13 +156,13 @@ export const ApartmentDetailsModal = ({ apartment, onClose, onBookNow }: Apartme
             <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-white">Availability</h3>
             <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
               <Calendar className="h-4 w-4" />
-              <p>Available immediately</p>
+              <p>{formatAvailability()}</p>
             </div>
           </div>
           
           <div className="mt-6 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg">
             <h3 className="font-semibold text-md text-gray-900 dark:text-white">Listed by:</h3>
-            <p className="text-gray-600 dark:text-gray-400 font-medium">{ownerName}</p>
+            <p className="text-gray-600 dark:text-gray-400 font-medium">{apartment.ownerName || 'Unknown Owner'}</p>
           </div>
           
           <div className="grid grid-cols-2 gap-4 mt-6">
@@ -189,16 +185,6 @@ export const ApartmentDetailsModal = ({ apartment, onClose, onBookNow }: Apartme
           </div>
         </div>
       </div>
-      
-      {showChat && (
-        <ChatModal 
-          apartmentId={apartment.id}
-          apartmentName={apartment.name}
-          ownerId={ownerId}
-          ownerName={ownerName}
-          onClose={() => setShowChat(false)}
-        />
-      )}
     </div>
   );
 };

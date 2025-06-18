@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { ApartmentCard } from './ApartmentCard';
-import { Filter, Wifi, ParkingMeter, X } from 'lucide-react';
+import { Filter, Wifi, ParkingMeter, Wind, UtensilsCrossed, X } from 'lucide-react';
 import { Button } from '../UI/button';
 import { Checkbox } from '../UI/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../UI/dialog';
@@ -41,8 +41,8 @@ export const ApartmentList = () => {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [filteredApartments, setFilteredApartments] = useState<Apartment[]>([]);
   const [allApartments, setAllApartments] = useState<Apartment[]>([]);
-  const [minPrice, setMinPrice] = useState(500);
-  const [maxPrice, setMaxPrice] = useState(5000);
+  const [minPrice, setMinPrice] = useState(30);
+  const [maxPrice, setMaxPrice] = useState(1000);
   const [bedrooms, setBedrooms] = useState<number | null>(null);
   const [bathrooms, setBathrooms] = useState<number | null>(null);
   const [hasWifi, setHasWifi] = useState(false);
@@ -71,8 +71,10 @@ export const ApartmentList = () => {
           sqft: 800, // You might want to add these to your schema
           // Format price as string with $ for display
           price: property.price,
-          // Set ownerId if available, otherwise use empty string
-          ownerId: property._id || ''
+          // Set ownerId from property's ownerId
+          ownerId: property._id || '',
+          // Use the ownerName from the property data
+          ownerName: property.ownerName || 'Unknown Owner'
         })) as Apartment[];
         
         setAllApartments(mappedProperties);
@@ -95,6 +97,11 @@ export const ApartmentList = () => {
   // Property types from your schema
   const propertyTypes = ['All', 'apartment', 'house', 'studio', 'condo', 'room'];
   
+  // Add these state variables
+  const [hasAC, setHasAC] = useState(false);
+  const [hasKitchen, setHasKitchen] = useState(false);
+  
+  // Update the applyFilters function
   const applyFilters = () => {
     let result = [...allApartments];
     
@@ -102,26 +109,6 @@ export const ApartmentList = () => {
     result = result.filter(apt => {
       return apt.price >= minPrice && apt.price <= maxPrice;
     });
-    
-    // Filter by bedrooms (if you add this to your schema)
-    if (bedrooms !== null && result.some(apt => apt.bedrooms !== undefined)) {
-      result = result.filter(apt => apt.bedrooms === bedrooms);
-    }
-    
-    // Filter by bathrooms (if you add this to your schema)
-    if (bathrooms !== null && result.some(apt => apt.bathrooms !== undefined)) {
-      result = result.filter(apt => apt.bathrooms >= bathrooms);
-    }
-    
-    // Filter by property type
-    if (propertyType !== 'All') {
-      result = result.filter(apt => apt.type === propertyType);
-    }
-    
-    // Filter by location (city)
-    if (location !== 'All') {
-      result = result.filter(apt => apt.city === location);
-    }
     
     // Filter by WiFi
     if (hasWifi) {
@@ -133,19 +120,28 @@ export const ApartmentList = () => {
       result = result.filter(apt => apt.amenities?.includes('Parking'));
     }
     
+    // Filter by AC
+    if (hasAC) {
+      result = result.filter(apt => apt.amenities?.includes('AC'));
+    }
+    
+    // Filter by Kitchen
+    if (hasKitchen) {
+      result = result.filter(apt => apt.amenities?.includes('Kitchen'));
+    }
+    
     setFilteredApartments(result);
     setIsFiltersOpen(false);
   };
   
+  // Update the resetFilters function
   const resetFilters = () => {
-    setMinPrice(500);
-    setMaxPrice(5000);
-    setBedrooms(null);
-    setBathrooms(null);
+    setMinPrice(30);
+    setMaxPrice(1000);
     setHasWifi(false);
     setHasParking(false);
-    setPropertyType('All');
-    setLocation('All');
+    setHasAC(false);
+    setHasKitchen(false);
     setFilteredApartments(allApartments);
   };
 
@@ -191,14 +187,75 @@ export const ApartmentList = () => {
             </DialogHeader>
             
             <div className="py-4 space-y-6">
+              <div className="space-y-3">
+                <h3 className="text-sm font-medium">Amenities</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="parking" 
+                      checked={hasParking} 
+                      onCheckedChange={(checked) => setHasParking(checked === true)}
+                    />
+                    <label 
+                      htmlFor="parking" 
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2"
+                    >
+                      <ParkingMeter size={16} /> Parking
+                    </label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="wifi" 
+                      checked={hasWifi} 
+                      onCheckedChange={(checked) => setHasWifi(checked === true)}
+                    />
+                    <label 
+                      htmlFor="wifi" 
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2"
+                    >
+                      <Wifi size={16} /> WiFi
+                    </label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="ac" 
+                      checked={hasAC} 
+                      onCheckedChange={(checked) => setHasAC(checked === true)}
+                    />
+                    <label 
+                      htmlFor="ac" 
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2"
+                    >
+                      <Wind size={16} /> AC
+                    </label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="kitchen" 
+                      checked={hasKitchen} 
+                      onCheckedChange={(checked) => setHasKitchen(checked === true)}
+                    />
+                    <label 
+                      htmlFor="kitchen" 
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2"
+                    >
+                      <UtensilsCrossed size={16} /> Kitchen
+                    </label>
+                  </div>
+                </div>
+              </div>
+              
               <div className="space-y-2">
                 <h3 className="text-sm font-medium">Price Range</h3>
                 <div className="pt-6">
                   <Slider 
                     value={[minPrice, maxPrice]} 
-                    min={500} 
-                    max={5000} 
-                    step={100} 
+                    min={30} 
+                    max={1000} 
+                    step={10} 
                     onValueChange={(values) => {
                       setMinPrice(values[0]);
                       setMaxPrice(values[1]);
@@ -210,110 +267,11 @@ export const ApartmentList = () => {
                   <span>${maxPrice}</span>
                 </div>
               </div>
-              
-              <div className="space-y-3">
-                <h3 className="text-sm font-medium">Bedrooms</h3>
-                <div className="flex gap-2">
-                  {[null, 0, 1, 2, 3, 4].map((num) => (
-                    <Button 
-                      key={num === null ? 'any' : num} 
-                      size="sm"
-                      variant={bedrooms === num ? 'default' : 'outline'}
-                      className="flex-1"
-                      onClick={() => setBedrooms(num)}
-                    >
-                      {num === null ? 'Any' : num === 0 ? 'Studio' : num}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="space-y-3">
-                <h3 className="text-sm font-medium">Bathrooms</h3>
-                <div className="flex gap-2">
-                  {[null, 1, 2, 3].map((num) => (
-                    <Button 
-                      key={num === null ? 'any' : num} 
-                      size="sm"
-                      variant={bathrooms === num ? 'default' : 'outline'}
-                      className="flex-1"
-                      onClick={() => setBathrooms(num)}
-                    >
-                      {num === null ? 'Any' : num}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="space-y-3">
-                <h3 className="text-sm font-medium">Property Type</h3>
-                <div className="flex flex-wrap gap-2">
-                  {propertyTypes.map((type) => (
-                    <Button 
-                      key={type} 
-                      size="sm"
-                      variant={propertyType === type ? 'default' : 'outline'}
-                      onClick={() => setPropertyType(type)}
-                    >
-                      {type.charAt(0).toUpperCase() + type.slice(1)}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="space-y-3">
-                <h3 className="text-sm font-medium">Location</h3>
-                <div className="flex flex-wrap gap-2">
-                  {locations.map((loc) => (
-                    <Button 
-                      key={loc} 
-                      size="sm"
-                      variant={location === loc ? 'default' : 'outline'}
-                      onClick={() => setLocation(loc)}
-                    >
-                      {loc}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="space-y-3">
-                <h3 className="text-sm font-medium">Amenities</h3>
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="wifi" 
-                      checked={hasWifi} 
-                      onCheckedChange={(checked) => setHasWifi(checked === true)}
-                    />
-                    <label 
-                      htmlFor="wifi" 
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2"
-                    >
-                      <Wifi size={16} /> WiFi Included
-                    </label>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="parking" 
-                      checked={hasParking} 
-                      onCheckedChange={(checked) => setHasParking(checked === true)}
-                    />
-                    <label 
-                      htmlFor="parking" 
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2"
-                    >
-                      <ParkingMeter size={16} /> Parking Available
-                    </label>
-                  </div>
-                </div>
-              </div>
             </div>
             
             <div className="flex justify-between">
               <Button variant="outline" onClick={resetFilters}>
-                <X size={16} className="mr-1" /> Reset
+                Reset
               </Button>
               <Button onClick={applyFilters}>
                 Apply Filters

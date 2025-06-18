@@ -28,11 +28,6 @@ const HomePage = () => {
           </Button>
         </div>
         
-        {/* Recommendations Section */}
-        <div className="space-y-3">
-          <h2 className="text-xl font-bold">Recommended For You</h2>
-          <ApartmentRecommendations />
-        </div>
         
         {/* Features Section */}
         <div className="space-y-3">
