@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MobileLayout } from '../components/Layout/MobileLayout';
 import { Button } from '../components/UI/button';
 import { User, Settings, Bell, LogOut, Building, MessageCircle } from 'lucide-react';
@@ -10,20 +10,20 @@ import { Popover, PopoverContent, PopoverTrigger } from '../components/UI/popove
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/UI/dialog';
 import { useAuth } from '../contexts/AuthContext';
 import { StudentMessagesList } from '../components/Student/StudentMessagesList';
+import { format } from 'date-fns';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, notifications, hasUnreadNotifications, markNotificationAsSeen, fetchNotifications } = useAuth();
   const [showSettings, setShowSettings] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showMessages, setShowMessages] = useState(false);
   
   // TODO: Replace with your database API calls
   const [ownerApartments, setOwnerApartments] = useState<any[]>([]);
-  const [mockNotifications, setMockNotifications] = useState<any[]>([]);
   
   // Fetch user data from your database API
-  React.useEffect(() => {
+  useEffect(() => {
     if (!user) return;
     
     // TODO: Replace with your database API calls
@@ -36,21 +36,28 @@ const ProfilePage = () => {
     //   fetchOwnerApartments();
     // }
     
-    // const fetchNotifications = async () => {
-    //   const response = await fetch(`/api/notifications/${user.id}`);
-    //   const data = await response.json();
-    //   setMockNotifications(data);
-    // };
-    // fetchNotifications();
-    
     console.log('Fetch user data placeholder - connect to your database API');
   }, [user]);
+  
+  // Fetch notifications when dialog opens
+  useEffect(() => {
+    if (showNotifications && user) {
+      fetchNotifications();
+    }
+  }, [showNotifications, user, fetchNotifications]);
   
   const handleOpenSettings = () => {
     setShowSettings(true);
   };
   
-  const unreadCount = mockNotifications.filter(n => !n.read).length;
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return format(date, 'MMM d, h:mm a');
+  };
+  
+  const handleNotificationClick = async (notificationId: string) => {
+    await markNotificationAsSeen(notificationId);
+  };
   
   if (!user) {
     return (
@@ -94,21 +101,6 @@ const ProfilePage = () => {
               {user?.role === 'owner' ? 'Property Owner' : 'Student'}
             </span>
           </div>
-          <div className="ml-auto">
-            {/* <Button
-              size="icon"
-              variant="outline"
-              className="relative"
-              onClick={() => setShowNotifications(true)}
-            >
-              <Bell className="h-5 w-5" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
-                  {unreadCount}
-                </span>
-              )}
-            </Button> */}
-          </div>
         </div>
         
         {/* Owner Dashboard Button - Only show for owners */}
@@ -148,9 +140,9 @@ const ProfilePage = () => {
               <Bell className="text-apartment dark:text-primary h-5 w-5" />
               <span>Notifications</span>
             </div>
-            {unreadCount > 0 && (
+            {hasUnreadNotifications && (
               <span className="bg-primary text-primary-foreground px-2 py-0.5 rounded text-sm">
-                {unreadCount} New
+                New
               </span>
             )}
           </div>
@@ -197,31 +189,25 @@ const ProfilePage = () => {
             <DialogTitle className="text-gray-900 dark:text-white">Notifications</DialogTitle>
           </DialogHeader>
           <div className="max-h-[60vh] overflow-y-auto">
-            {mockNotifications.length > 0 ? (
+            {notifications.length > 0 ? (
               <div className="space-y-4 py-2">
-                {mockNotifications.map((notification) => (
+                {notifications.map((notification) => (
                   <div 
-                    key={notification.id} 
-                    className={`p-3 rounded-lg border ${!notification.read ? 'bg-gray-100 dark:bg-gray-800 border-blue-200 dark:border-blue-800' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900'}`}
+                    key={notification._id} 
+                    onClick={() => handleNotificationClick(notification._id)}
+                    className={`p-3 rounded-lg border cursor-pointer ${!notification.seen ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900'}`}
                   >
-                    <div className="flex justify-between">
-                      <h4 className="font-medium text-gray-900 dark:text-white">{notification.sender}</h4>
-                      <span className="text-xs text-gray-600 dark:text-gray-400">{notification.time}</span>
-                    </div>
-                    <p className="text-sm mt-1 text-gray-700 dark:text-gray-300">{notification.content}</p>
-                    {!notification.read && (
-                      <div className="mt-2 flex justify-end">
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => {
-                            toast.success("Marked as read");
-                          }}
-                        >
-                          Mark as read
-                        </Button>
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <p className="text-sm text-gray-900 dark:text-white">{notification.message}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          {formatTime(notification.createdAt)}
+                        </p>
                       </div>
-                    )}
+                      {!notification.seen && (
+                        <span className="h-2 w-2 bg-blue-500 rounded-full mt-1"></span>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
