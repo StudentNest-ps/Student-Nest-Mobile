@@ -18,3 +18,12 @@ export const MobileLayout = ({ children }: MobileLayoutProps) => {
     </div>
   );
 };
+
+// Find the header section in your MobileLayout component and add the NotificationBell
+import { NotificationBell } from '../UI/NotificationBell';
+
+// Inside the header section of your MobileLayout
+<div className="flex items-center gap-2">
+  <NotificationBell />
+  {/* Other header elements */}
+</div>

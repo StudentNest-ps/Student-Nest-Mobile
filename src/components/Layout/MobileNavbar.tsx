@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Bell, Moon, Sun, ArrowLeft } from 'lucide-react';
+import { Moon, Sun, ArrowLeft } from 'lucide-react';
 import { Button } from '../UI/button';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -52,13 +52,6 @@ export const MobileNavbar = () => {
             <span className="sr-only">
               {theme === 'dark' ? 'Light mode' : 'Dark mode'}
             </span>
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="icon"
-            className="text-primary-foreground dark:text-foreground"
-          >
-            <Bell size={20} />
           </Button>
         </div>
       </div>
