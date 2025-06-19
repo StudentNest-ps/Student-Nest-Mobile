@@ -1,16 +1,28 @@
-import React, { useState } from 'react';
-import { X} from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '../UI/button';
 import { Input } from '../UI/input';
 import { Textarea } from '../UI/textarea';
 import { ownerService } from '@/services/owner.service';
+import { useAuth } from '@/contexts/AuthContext';
+import fs from 'fs';
+import path from 'path';
 
 interface AddPropertyModalProps {
   onClose: () => void;
 }
 
+// Available pre-existing images in the gp folder
+const preExistingImages = [
+  '/gp/37418533.jpg',
+  '/gp/Studio-Apartments-in-Australia-for-students.jpg',
+  '/gp/download.jpg',
+  '/gp/studio-2-NXPowerLite-Copy-1400x788.jpg'
+];
+
 export const AddPropertyModal = ({ onClose }: AddPropertyModalProps) => {
+  const { user } = useAuth();
   const [propertyData, setPropertyData] = useState({
     title: '',
     description: '',
@@ -25,9 +37,10 @@ export const AddPropertyModal = ({ onClose }: AddPropertyModalProps) => {
     availableTo: '',
     maxGuests: 0, // Changed from guests
     amenities: [] as string[], // Explicitly string[]
-    images: [] as File[] // For collecting File objects from input
+    images: [] as File[], // For collecting File objects from input
+    selectedPreExistingImage: '' // For storing the selected pre-existing image path
   });
-
+  
   const propertyTypes = [
     { id: 'apartment', label: 'Apartment' },
     { id: 'house', label: 'House' },
@@ -40,7 +53,7 @@ export const AddPropertyModal = ({ onClose }: AddPropertyModalProps) => {
     'WiFi', 'Air Conditioning', 'Kitchen', 'Swimming Pool', 'Balcony', 'Parking', 'TV', 'Gym', 'Security System'
   ];
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
       const validFiles = Array.from(files).filter(file => {
@@ -60,13 +73,37 @@ export const AddPropertyModal = ({ onClose }: AddPropertyModalProps) => {
         return true;
       });
 
-      setPropertyData(prev => ({
-        ...prev,
-        images: [...prev.images, ...validFiles]
-      }));
-
       if (validFiles.length > 0) {
-        toast.success(`${validFiles.length} image(s) added successfully`);
+        // Save the file to the gp folder
+        try {
+          const file = validFiles[0]; // Take the first valid file
+          const fileName = `${Date.now()}_${file.name}`;
+          const targetPath = `/gp/${fileName}`;
+          
+          // In a real app, you would use a server API to save the file
+          // For this example, we'll simulate saving and just store the path
+          
+          // Simulate file saving (in a real app, this would be a server API call)
+          // const formData = new FormData();
+          // formData.append('image', file);
+          // const response = await fetch('/api/upload', {
+          //   method: 'POST',
+          //   body: formData
+          // });
+          // const data = await response.json();
+          
+          // For now, just pretend we saved it and store the path
+          setPropertyData(prev => ({
+            ...prev,
+            images: [...prev.images, ...validFiles],
+            savedImagePath: targetPath
+          }));
+          
+          toast.success(`Image will be saved to ${targetPath}`);
+        } catch (error) {
+          console.error('Error saving image:', error);
+          toast.error('Failed to save image');
+        }
       }
     }
   };
@@ -80,6 +117,16 @@ export const AddPropertyModal = ({ onClose }: AddPropertyModalProps) => {
     }));
   };
 
+  const selectPreExistingImage = (imagePath: string) => {
+    setPropertyData(prev => ({
+      ...prev,
+      selectedPreExistingImage: imagePath,
+      // Clear uploaded images when selecting a pre-existing one
+      images: []
+    }));
+    toast.success('Pre-existing image selected');
+  };
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -98,19 +145,15 @@ export const AddPropertyModal = ({ onClose }: AddPropertyModalProps) => {
       availableTo: propertyData.availableTo,
       maxGuests: Number(propertyData.maxGuests),
       amenities: propertyData.amenities,
-      // Handle image: For now, using the first image's name or an empty string.
-      // In a real app, upload images and get URLs.
-      // Use a proper URL for the image or empty string
-      image: propertyData.images.length > 0 
-        ? URL.createObjectURL(propertyData.images[0]) // Create a temporary URL for preview
-        : '', // Empty string if no image
+      // Use the selected pre-existing image if available, otherwise use uploaded image
+      image: propertyData.selectedPreExistingImage || 
+             (propertyData.images.length > 0 ? URL.createObjectURL(propertyData.images[0]) : ''),
       // IMPORTANT: Replace this with the actual ID of the logged-in owner
       ownerId: 'REPLACE_WITH_ACTUAL_OWNER_ID', 
     };
 
     console.log('Submitting property data:', newPropertyPayload);
 
-    // TODO: Call your actual service to add the property, e.g.:
     try {
       const response = await ownerService.addProperty(newPropertyPayload);
       toast.success('Property added successfully!');
@@ -119,10 +162,6 @@ export const AddPropertyModal = ({ onClose }: AddPropertyModalProps) => {
       console.error('Failed to add property:', error);
       toast.error('Failed to add property. Please try again.');
     }
-
-    // For now, simulating success as the original code did:
-    toast.success('Property (simulated) added successfully!');
-    onClose();
   };
 
   return (
@@ -234,10 +273,47 @@ export const AddPropertyModal = ({ onClose }: AddPropertyModalProps) => {
             </div>
           </div>
 
+          {/* Pre-existing Images Section */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Select Pre-existing Image</label>
+            <div className="grid grid-cols-2 gap-4">
+              {preExistingImages.map((img, index) => (
+                <div 
+                  key={index} 
+                  className={`relative border rounded-md overflow-hidden cursor-pointer ${propertyData.selectedPreExistingImage === img ? 'ring-2 ring-primary-500' : ''}`}
+                  onClick={() => selectPreExistingImage(img)}
+                >
+                  <img 
+                    src={img} 
+                    alt={`Property image ${index + 1}`} 
+                    className="w-full h-32 object-cover"
+                  />
+                  {propertyData.selectedPreExistingImage === img && (
+                    <div className="absolute inset-0 bg-primary-500/20 flex items-center justify-center">
+                      <span className="bg-primary-500 text-white px-2 py-1 rounded-md text-xs">Selected</span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <div className="text-center text-sm text-gray-500">- OR -</div>
+          
           {/* Upload Images */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Property Images</label>
-            <input type="file" multiple accept="image/*" onChange={handleImageUpload} className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 dark:file:bg-gray-700 dark:file:text-gray-200 dark:hover:file:bg-gray-600 p-2 border rounded-md dark:border-gray-700" />
+            <label className="text-sm font-medium">Upload Property Images</label>
+            <input 
+              type="file" 
+              multiple 
+              accept="image/*" 
+              onChange={handleImageUpload} 
+              className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 dark:file:bg-gray-700 dark:file:text-gray-200 dark:hover:file:bg-gray-600 p-2 border rounded-md dark:border-gray-700" 
+              disabled={!!propertyData.selectedPreExistingImage}
+            />
+            {propertyData.selectedPreExistingImage && (
+              <p className="text-xs text-amber-500">Please deselect the pre-existing image to upload your own images</p>
+            )}
           </div>
 
           <div className="flex gap-3">

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Bed, Bath } from 'lucide-react';
-import { Button } from '../UI/button';
+import { Bed, Bath, Wifi, Car, Tv, Wind } from 'lucide-react';
 import { ApartmentDetailsModal } from './ApartmentDetailsModal';
 import { useNavigate } from 'react-router-dom';
 
@@ -15,8 +14,9 @@ interface ApartmentProps {
     sqft: number;
     image: string;
     description?: string;
-    ownerId?: string;  // Added ownerId
-    ownerName?: string; // Added ownerName
+    ownerId?: string;
+    ownerName?: string;
+    amenities?: string[];
   };
 }
 
@@ -26,6 +26,13 @@ export const ApartmentCard = ({ apartment }: ApartmentProps) => {
   
   const handleBookNow = () => {
     navigate(`/booking/${apartment.id}`, { state: { apartment } });
+  };
+  
+  // Helper function to check if an amenity exists
+  const hasAmenity = (amenity: string) => {
+    return apartment.amenities?.some(a => 
+      a.toLowerCase().includes(amenity.toLowerCase())
+    );
   };
   
   return (
@@ -39,68 +46,83 @@ export const ApartmentCard = ({ apartment }: ApartmentProps) => {
               className="w-full h-full object-cover cursor-pointer"
               onClick={() => setShowDetails(true)}
               onError={(e) => {
-                // Hide the broken image
-                e.currentTarget.style.display = 'none';
-                // Show parent div with background color and first letter
-                e.currentTarget.parentElement.innerHTML = `<div class="flex items-center justify-center w-full h-full text-gray-500 dark:text-gray-400 text-4xl font-bold cursor-pointer" onclick="setShowDetails(true)">
-                  <span>${apartment.name.charAt(0)}</span>
-                </div>`;
+                // Fallback image if the main one fails to load
+                (e.target as HTMLImageElement).src = '/placeholder.svg';
               }}
             />
           ) : (
-            <div 
-              className="flex items-center justify-center w-full h-full text-gray-500 dark:text-gray-400 text-4xl font-bold cursor-pointer"
-              onClick={() => setShowDetails(true)}
-            >
-              <span>{apartment.name.charAt(0)}</span>
-            </div>
-          )}
-          {apartment.ownerName && (
-            <div className="absolute bottom-0 left-0 bg-background/80 px-2 py-1 text-xs font-medium">
-              Listed by {apartment.ownerName}
+            <div className="text-gray-400 dark:text-gray-500 text-sm">
+              No image available
             </div>
           )}
         </div>
         
         <div className="p-4">
-          <div className="flex justify-between items-start">
-            <h3 className="font-medium line-clamp-1 text-foreground">{apartment.name}</h3>
-            <p className="font-bold text-apartment dark:text-primary price-text">{apartment.price}</p>
+          <h3 className="font-semibold text-lg mb-1 cursor-pointer" onClick={() => setShowDetails(true)}>
+            {apartment.name}
+          </h3>
+          <p className="text-muted-foreground text-sm mb-2">{apartment.location}</p>
+          
+          <div className="flex justify-between items-center mb-3">
+            <span className="font-bold text-lg">${apartment.price}<span className="text-xs font-normal">/month</span></span>
           </div>
           
-          <p className="text-sm text-muted-foreground mt-1">{apartment.location}</p>
-          
-          <div className="flex items-center gap-4 mt-4 text-sm text-foreground">
+          <div className="flex items-center gap-3 text-sm text-muted-foreground mb-3">
             <div className="flex items-center gap-1">
-              <Bed className="h-4 w-4 text-muted-foreground" />
-              <span>{apartment.bedrooms} {apartment.bedrooms === 0 ? 'Studio' : apartment.bedrooms === 1 ? 'Bed' : 'Beds'}</span>
+              <Bed className="h-4 w-4" />
+              <span>{apartment.bedrooms} bed</span>
             </div>
-            
             <div className="flex items-center gap-1">
-              <Bath className="h-4 w-4 text-muted-foreground" />
-              <span>{apartment.bathrooms} {apartment.bathrooms === 1 ? 'Bath' : 'Baths'}</span>
+              <Bath className="h-4 w-4" />
+              <span>{apartment.bathrooms} bath</span>
             </div>
-            
             <div>
-              <span>{apartment.sqft} sq ft</span>
+              <span>{apartment.sqft} sqft</span>
             </div>
           </div>
-        </div>
-        
-        <div className="px-4 pb-4">
-          <Button 
-            className="w-full text-primary-foreground" 
-            onClick={() => setShowDetails(true)}
-          >
-            View Details
-          </Button>
+          
+          {/* Amenities section */}
+          {apartment.amenities && apartment.amenities.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-3">
+              {hasAmenity('wifi') && (
+                <div className="bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 text-xs px-2 py-1 rounded-md flex items-center gap-1">
+                  <Wifi className="h-3 w-3" />
+                  <span>WiFi</span>
+                </div>
+              )}
+              {hasAmenity('parking') && (
+                <div className="bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 text-xs px-2 py-1 rounded-md flex items-center gap-1">
+                  <Car className="h-3 w-3" />
+                  <span>Parking</span>
+                </div>
+              )}
+              {hasAmenity('tv') && (
+                <div className="bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 text-xs px-2 py-1 rounded-md flex items-center gap-1">
+                  <Tv className="h-3 w-3" />
+                  <span>TV</span>
+                </div>
+              )}
+              {hasAmenity('air') && (
+                <div className="bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-xs px-2 py-1 rounded-md flex items-center gap-1">
+                  <Wind className="h-3 w-3" />
+                  <span>AC</span>
+                </div>
+              )}
+              {apartment.amenities.length > 4 && (
+                <div className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs px-2 py-1 rounded-md">
+                  +{apartment.amenities.length - 4} more
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
       
       {showDetails && (
         <ApartmentDetailsModal 
-          apartment={apartment}
-          onClose={() => setShowDetails(false)}
+          apartment={apartment} 
+          onClose={() => setShowDetails(false)} 
+          onBookNow={handleBookNow}
         />
       )}
     </>
