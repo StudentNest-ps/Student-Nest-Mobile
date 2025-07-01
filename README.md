@@ -86,14 +86,14 @@ Student-Nest-Mobile/
    ```bash
    npm install
    ```
-
+   
 3. **Run the development server:**
    ```bash
    npm run dev
    ```
 
 4. **Open the app:**
-   - Visit [http://localhost:5173](http://localhost:5173) in your browser.
+   - Visit [http://localhost:5173](http://localhost:8080) in your browser.
    - For mobile/PWA: Use Capacitor to run on iOS/Android (see Capacitor docs).
 
 ---
