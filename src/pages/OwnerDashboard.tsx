@@ -20,11 +20,15 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle
-} from "../components/ui/dialog";
+} from "../components/UI/dialog";
 import { ownerService, Property } from "../services/owner.service";
+import { OwnerMessagesList } from "../components/Owner/OwnerMessagesList";
+import { useAuth } from "../contexts/AuthContext";
+import { chatService, Message } from "../services/chat.service";
 
 const OwnerDashboard = () => {
   const navigate = useNavigate();
+  const { notifications, hasUnreadNotifications, markNotificationAsSeen, fetchNotifications } = useAuth();
   const [showApartments, setShowApartments] = useState(false);
   const [showBookings, setShowBookings] = useState(false);
   const [showAddProperty, setShowAddProperty] = useState(false);
@@ -33,70 +37,56 @@ const OwnerDashboard = () => {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [recentMessages, setRecentMessages] = useState<Message[]>([]);
+  const [loadingMessages, setLoadingMessages] = useState(true);
 
-  // UI-only mock data for notifications
-  const mockNotifications = [
-    {
-      id: "1",
-      type: "message",
-      sender: "Emily Johnson",
-      content:
-        "Hi, I'm interested in your apartment on Oak Street. Is it still available?",
-      time: "10 minutes ago",
-      read: false
-    },
-    {
-      id: "2",
-      type: "booking",
-      sender: "Michael Smith",
-      content: "New booking request for Downtown Studio",
-      time: "2 hours ago",
-      read: false
-    },
-    {
-      id: "3",
-      type: "message",
-      sender: "Sophia Williams",
-      content:
-        "Thanks for accepting my booking! Looking forward to moving in next month.",
-      time: "1 day ago",
-      read: true
+  const fetchProperties = async () => {
+    try {
+      setLoading(true);
+      const data = await ownerService.getMyProperties();
+      console.log(data);
+
+      setProperties(data);
+      setError(null);
+    } catch (err) {
+      setError("Failed to load properties");
+      toast.error("Failed to load properties");
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
-  const unreadCount = mockNotifications.filter((n) => !n.read).length;
+  const fetchRecentMessages = async () => {
+    try {
+      setLoadingMessages(true);
+      const chats = await chatService.getChats();
+      
+      // Get the most recent messages from each chat
+      const messagesPromises = chats.slice(0, 2).map(chat => 
+        chatService.getChatMessages(chat._id)
+      );
+      
+      const messagesResults = await Promise.all(messagesPromises);
+      
+      // Flatten and sort by date
+      const allMessages = messagesResults
+        .flat()
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 2); // Get only the two most recent messages
+      
+      setRecentMessages(allMessages);
+    } catch (err) {
+      console.error("Failed to load recent messages:", err);
+    } finally {
+      setLoadingMessages(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchProperties = async () => {
-      try {
-        setLoading(true);
-        const data = await ownerService.getMyProperties();
-        console.log(data);
-
-        setProperties(data);
-        setError(null);
-      } catch (err) {
-        setError("Failed to load properties");
-        toast.error("Failed to load properties");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchProperties();
+    fetchRecentMessages();
+    fetchNotifications();
   }, []);
-
-  // const handleAddProperty = async (
-  //   propertyData: Omit<Property, "_id" | "ownerId">
-  // ) => {
-  //   try {
-  //     await ownerService.addProperty(propertyData);
-  //     toast.success("Property added successfully");
-  //     //TODO: Update the apartments after insertion
-  //   } catch (err) {
-  //     toast.error("Failed to add property");
-  //   }
-  // };
 
   const handleUpdateProperty = async (
     propertyId: string,
@@ -121,25 +111,35 @@ const OwnerDashboard = () => {
     }
   };
 
+  // Format relative time (e.g., "10 minutes ago")
+  const formatRelativeTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (diffInSeconds < 60) return 'Just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+    return `${Math.floor(diffInSeconds / 86400)} days ago`;
+  };
+
   return (
     <MobileLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Owner Dashboard</h1>
           <div className="flex items-center gap-2">
-            <Button
-              size="icon"
-              variant="ghost"
-              className="relative"
-              onClick={() => setShowNotifications(true)}
-            >
-              <Bell className="h-5 w-5" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
-                  {unreadCount}
-                </span>
-              )}
-            </Button>
+            {hasUnreadNotifications && (
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => setShowNotifications(true)}
+                className="relative"
+              >
+                <Bell className="h-5 w-5" />
+                <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
+              </Button>
+            )}
             <Button
               size="icon"
               variant="ghost"
@@ -167,9 +167,9 @@ const OwnerDashboard = () => {
           >
             <MessageCircle className="h-6 w-6 mb-2" />
             <span>Messages</span>
-            {unreadCount > 0 && (
+            {notifications.filter(n => n.type === 'message' && !n.seen).length > 0 && (
               <span className="absolute top-2 right-2 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                {unreadCount} new
+                {notifications.filter(n => n.type === 'message' && !n.seen).length} new
               </span>
             )}
           </Button>
@@ -201,42 +201,42 @@ const OwnerDashboard = () => {
               Recent Messages
             </h2>
 
-            {mockNotifications.filter((n) => n.type === "message").length >
-            0 ? (
+            {loadingMessages ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+              </div>
+            ) : recentMessages.length > 0 ? (
               <div className="divide-y divide-border">
-                {mockNotifications
-                  .filter((n) => n.type === "message")
-                  .map((msg) => (
-                    <div
-                      key={msg.id}
-                      className={`py-3 cursor-pointer hover:bg-muted/50 px-2 -mx-2 rounded-md ${
-                        !msg.read ? "bg-muted/30" : ""
-                      }`}
-                    >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3
-                            className={`font-medium ${
-                              !msg.read ? "font-semibold" : ""
-                            }`}
-                          >
-                            {msg.sender}
-                            {!msg.read && (
-                              <span className="ml-2 bg-primary text-primary-foreground text-xs py-0.5 px-1.5 rounded-full">
-                                New
-                              </span>
-                            )}
-                          </h3>
-                        </div>
-                        <span className="text-xs text-muted-foreground">
-                          {msg.time}
-                        </span>
+                {recentMessages.map((msg) => (
+                  <div
+                    key={msg._id}
+                    className="py-3 cursor-pointer hover:bg-muted/50 px-2 -mx-2 rounded-md"
+                    onClick={() => setShowMessages(true)}
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-medium">
+                          {msg.senderId === msg.receiverId ? 'System Message' : 'Student'}
+                          {notifications.some(n => 
+                            n.type === 'message' && 
+                            !n.seen && 
+                            n.message.includes(msg.message.substring(0, 20))
+                          ) && (
+                            <span className="ml-2 bg-primary text-primary-foreground text-xs py-0.5 px-1.5 rounded-full">
+                              New
+                            </span>
+                          )}
+                        </h3>
                       </div>
-                      <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
-                        {msg.content}
-                      </p>
+                      <span className="text-xs text-muted-foreground">
+                        {formatRelativeTime(msg.createdAt)}
+                      </span>
                     </div>
-                  ))}
+                    <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
+                      {msg.message}
+                    </p>
+                  </div>
+                ))}
               </div>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
@@ -258,11 +258,19 @@ const OwnerDashboard = () => {
 
       {/* Modals */}
       {showApartments && (
-        <OwnerApartmentsList apartments={properties} onClose={() => setShowApartments(false)} />
+        <OwnerApartmentsList 
+          apartments={properties} 
+          onClose={() => setShowApartments(false)} 
+          onPropertyUpdated={fetchProperties} 
+        />
       )}
 
       {showBookings && (
         <OwnerBookingsList onClose={() => setShowBookings(false)} />
+      )}
+
+      {showMessages && (
+        <OwnerMessagesList onClose={() => setShowMessages(false)} />
       )}
 
       {showAddProperty && (
@@ -275,32 +283,33 @@ const OwnerDashboard = () => {
             <DialogTitle>Notifications</DialogTitle>
           </DialogHeader>
           <div className="max-h-[60vh] overflow-y-auto">
-            {mockNotifications.length > 0 ? (
+            {notifications.length > 0 ? (
               <div className="space-y-4 py-2">
-                {mockNotifications.map((notification) => (
+                {notifications.map((notification) => (
                   <div
-                    key={notification.id}
+                    key={notification._id}
                     className={`p-3 rounded-lg border ${
-                      !notification.read
+                      !notification.seen
                         ? "bg-muted/40 border-primary/20"
                         : "border-border bg-card"
                     }`}
                   >
                     <div className="flex justify-between">
-                      <h4 className="font-medium">{notification.sender}</h4>
+                      <h4 className="font-medium">{notification.type === 'message' ? 'Message' : 'System'}</h4>
                       <span className="text-xs text-muted-foreground">
-                        {notification.time}
+                        {formatRelativeTime(notification.createdAt)}
                       </span>
                     </div>
                     <p className="text-sm mt-1 text-foreground">
-                      {notification.content}
+                      {notification.message}
                     </p>
-                    {!notification.read && (
+                    {!notification.seen && (
                       <div className="mt-2 flex justify-end">
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => {
+                            markNotificationAsSeen(notification._id);
                             toast.success("Marked as read");
                           }}
                         >

@@ -9,7 +9,7 @@ interface ApartmentProps {
     id: string;
     name: string;
     location: string;
-    price: string;
+    price: number;
     bedrooms: number;
     bathrooms: number;
     sqft: number;
@@ -31,13 +31,30 @@ export const ApartmentCard = ({ apartment }: ApartmentProps) => {
   return (
     <>
       <div className="rounded-xl overflow-hidden border border-border bg-card shadow-sm card-hover apartment-card">
-        <div className="relative">
-          <img 
-            src={apartment.image} 
-            alt={apartment.name}
-            className="w-full h-48 object-cover cursor-pointer"
-            onClick={() => setShowDetails(true)}
-          />
+        <div className="relative h-48 overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+          {apartment.image ? (
+            <img 
+              src={apartment.image} 
+              alt={apartment.name}
+              className="w-full h-full object-cover cursor-pointer"
+              onClick={() => setShowDetails(true)}
+              onError={(e) => {
+                // Hide the broken image
+                e.currentTarget.style.display = 'none';
+                // Show parent div with background color and first letter
+                e.currentTarget.parentElement.innerHTML = `<div class="flex items-center justify-center w-full h-full text-gray-500 dark:text-gray-400 text-4xl font-bold cursor-pointer" onclick="setShowDetails(true)">
+                  <span>${apartment.name.charAt(0)}</span>
+                </div>`;
+              }}
+            />
+          ) : (
+            <div 
+              className="flex items-center justify-center w-full h-full text-gray-500 dark:text-gray-400 text-4xl font-bold cursor-pointer"
+              onClick={() => setShowDetails(true)}
+            >
+              <span>{apartment.name.charAt(0)}</span>
+            </div>
+          )}
           {apartment.ownerName && (
             <div className="absolute bottom-0 left-0 bg-background/80 px-2 py-1 text-xs font-medium">
               Listed by {apartment.ownerName}

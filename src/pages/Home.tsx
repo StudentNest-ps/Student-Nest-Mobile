@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { MobileLayout } from '../components/Layout/MobileLayout';
-import { Button } from '../components/ui/button';
+import { Button } from '../components/UI/button';
 import { useNavigate } from 'react-router-dom';
 import { Wifi, Shield, Star, Home, Coffee, Clock } from 'lucide-react';
 import { ApartmentRecommendations } from '../components/Apartments/ApartmentRecommendations';
@@ -14,7 +14,7 @@ const HomePage = () => {
       <div className="space-y-8">
         {/* Hero Section */}
         <div className="bg-card p-6 rounded-xl border border-border shadow-sm">
-          <h1 className="text-3xl font-bold text-gradient">ApartmentFinder</h1>
+          <h1 className="text-3xl font-bold text-gradient">StudentNest</h1>
           <p className="text-muted-foreground mt-2 mb-6">
             Finding your perfect home has never been easier. Browse, compare, and book apartments 
             all in one place.
@@ -28,11 +28,6 @@ const HomePage = () => {
           </Button>
         </div>
         
-        {/* Recommendations Section */}
-        <div className="space-y-3">
-          <h2 className="text-xl font-bold">Recommended For You</h2>
-          <ApartmentRecommendations />
-        </div>
         
         {/* Features Section */}
         <div className="space-y-3">

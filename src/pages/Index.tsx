@@ -8,7 +8,7 @@ import { BlogHero } from '../components/Blog/BlogHero';
 import { BlogCarousel } from '../components/Blog/BlogCarousel';
 import { ErrorState } from '../components/UI/ErrorState';
 import { LoadingState } from '../components/UI/LoadingState';
-import { Button } from '../components/ui/button';
+import { Button } from '../components/UI/button';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
 
 // Wrapped component that uses auth context
@@ -80,7 +80,7 @@ const IndexContent = () => {
             {activeView === 'home' && (
               <div className="space-y-6">
                 <div className="bg-card p-4 rounded-lg border border-border">
-                  <h2 className="text-2xl font-bold mb-2 text-gradient">ApartmentFinder</h2>
+                  <h2 className="text-2xl font-bold mb-2 text-gradient">StudentNest</h2>
                   <p className="text-muted-foreground mb-4">
                     Find your perfect home with our mobile apartment finder app.
                   </p>

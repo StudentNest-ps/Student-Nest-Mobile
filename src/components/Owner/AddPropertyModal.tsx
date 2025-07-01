@@ -100,7 +100,10 @@ export const AddPropertyModal = ({ onClose }: AddPropertyModalProps) => {
       amenities: propertyData.amenities,
       // Handle image: For now, using the first image's name or an empty string.
       // In a real app, upload images and get URLs.
-      image: propertyData.images.length > 0 ? propertyData.images[0].name : '',
+      // Use a proper URL for the image or empty string
+      image: propertyData.images.length > 0 
+        ? URL.createObjectURL(propertyData.images[0]) // Create a temporary URL for preview
+        : '', // Empty string if no image
       // IMPORTANT: Replace this with the actual ID of the logged-in owner
       ownerId: 'REPLACE_WITH_ACTUAL_OWNER_ID', 
     };

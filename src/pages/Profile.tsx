@@ -1,27 +1,29 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MobileLayout } from '../components/Layout/MobileLayout';
-import { Button } from '../components/ui/button';
+import { Button } from '../components/UI/button';
 import { User, Settings, Bell, LogOut, Building, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AccountSettingsModal } from '../components/Profile/AccountSettingsModal';
 import { toast } from 'sonner';
-import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '../components/UI/popover';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/UI/dialog';
 import { useAuth } from '../contexts/AuthContext';
+import { StudentMessagesList } from '../components/Student/StudentMessagesList';
+import { format } from 'date-fns';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, notifications, hasUnreadNotifications, markNotificationAsSeen, fetchNotifications } = useAuth();
   const [showSettings, setShowSettings] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showMessages, setShowMessages] = useState(false);
   
   // TODO: Replace with your database API calls
   const [ownerApartments, setOwnerApartments] = useState<any[]>([]);
-  const [mockNotifications, setMockNotifications] = useState<any[]>([]);
   
   // Fetch user data from your database API
-  React.useEffect(() => {
+  useEffect(() => {
     if (!user) return;
     
     // TODO: Replace with your database API calls
@@ -34,21 +36,28 @@ const ProfilePage = () => {
     //   fetchOwnerApartments();
     // }
     
-    // const fetchNotifications = async () => {
-    //   const response = await fetch(`/api/notifications/${user.id}`);
-    //   const data = await response.json();
-    //   setMockNotifications(data);
-    // };
-    // fetchNotifications();
-    
     console.log('Fetch user data placeholder - connect to your database API');
   }, [user]);
+  
+  // Fetch notifications when dialog opens
+  useEffect(() => {
+    if (showNotifications && user) {
+      fetchNotifications();
+    }
+  }, [showNotifications, user, fetchNotifications]);
   
   const handleOpenSettings = () => {
     setShowSettings(true);
   };
   
-  const unreadCount = mockNotifications.filter(n => !n.read).length;
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return format(date, 'MMM d, h:mm a');
+  };
+  
+  const handleNotificationClick = async (notificationId: string) => {
+    await markNotificationAsSeen(notificationId);
+  };
   
   if (!user) {
     return (
@@ -92,75 +101,38 @@ const ProfilePage = () => {
               {user?.role === 'owner' ? 'Property Owner' : 'Student'}
             </span>
           </div>
-          <div className="ml-auto">
-            <Button
-              size="icon"
-              variant="outline"
-              className="relative"
-              onClick={() => setShowNotifications(true)}
-            >
-              <Bell className="h-5 w-5" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
-                  {unreadCount}
-                </span>
-              )}
-            </Button>
-          </div>
         </div>
         
         {/* Owner Dashboard Button - Only show for owners */}
         {user?.role === 'owner' && (
-          <div className="grid grid-cols-2 gap-3">
-            <Button 
-              variant="outline"
-              className="flex flex-col items-center justify-center h-24 bg-card border border-border"
+          <div className="space-y-3">
+            <div 
+              className="p-4 bg-card rounded-lg border border-border flex items-center justify-between cursor-pointer"
               onClick={() => navigate('/owner-dashboard')}
             >
-              <Building className="h-6 w-6 mb-2 text-apartment dark:text-primary" />
-              <span>Owner Dashboard</span>
-            </Button>
-            
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button 
-                  variant="outline"
-                  className="flex flex-col items-center justify-center h-24 bg-card border border-border"
-                >
-                  <MessageCircle className="h-6 w-6 mb-2 text-apartment dark:text-primary" />
-                  <span>My Properties</span>
-                  <span className="text-xs text-muted-foreground">{ownerApartments.length} listed</span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 p-4 w-80">
-                <div className="space-y-2">
-                  <h3 className="font-medium text-lg text-gray-900 dark:text-white">Your Properties</h3>
-                  <ul className="space-y-2 max-h-60 overflow-auto">
-                    {ownerApartments.length > 0 ? (
-                      ownerApartments.map(apt => (
-                        <li key={apt.id} className="p-2 bg-gray-100 dark:bg-gray-800 rounded-md">
-                          <p className="font-medium text-gray-900 dark:text-white">{apt.name}</p>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">{apt.location} - {apt.price}</p>
-                        </li>
-                      ))
-                    ) : (
-                      <li className="p-2 text-center text-gray-600 dark:text-gray-400">No properties found</li>
-                    )}
-                  </ul>
-                  <Button 
-                    className="w-full mt-2" 
-                    onClick={() => navigate('/owner-dashboard')}
-                  >
-                    Manage Properties
-                  </Button>
-                </div>
-              </PopoverContent>
-            </Popover>
+              <div className="flex items-center gap-3">
+                <Building className="text-apartment dark:text-primary h-5 w-5" />
+                <span>Owner Dashboard</span>
+              </div>
+            </div>
           </div>
         )}
         
         {/* Profile Options */}
         <div className="space-y-3">
+          {/* Messages Button - Only show for students */}
+          {user?.role === 'student' && (
+            <div 
+              className="p-4 bg-card rounded-lg border border-border flex items-center justify-between cursor-pointer"
+              onClick={() => setShowMessages(true)}
+            >
+              <div className="flex items-center gap-3">
+                <MessageCircle className="text-apartment dark:text-primary h-5 w-5" />
+                <span>Messages</span>
+              </div>
+            </div>
+          )}
+          
           <div className="p-4 bg-card rounded-lg border border-border flex items-center justify-between cursor-pointer"
             onClick={() => setShowNotifications(true)}
           >
@@ -168,9 +140,9 @@ const ProfilePage = () => {
               <Bell className="text-apartment dark:text-primary h-5 w-5" />
               <span>Notifications</span>
             </div>
-            {unreadCount > 0 && (
+            {hasUnreadNotifications && (
               <span className="bg-primary text-primary-foreground px-2 py-0.5 rounded text-sm">
-                {unreadCount} New
+                New
               </span>
             )}
           </div>
@@ -206,37 +178,36 @@ const ProfilePage = () => {
         />
       )}
 
+      {/* Student Messages List Modal */}
+      {showMessages && (
+        <StudentMessagesList onClose={() => setShowMessages(false)} />
+      )}
+
       <Dialog open={showNotifications} onOpenChange={setShowNotifications}>
         <DialogContent className="sm:max-w-md bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
           <DialogHeader>
             <DialogTitle className="text-gray-900 dark:text-white">Notifications</DialogTitle>
           </DialogHeader>
           <div className="max-h-[60vh] overflow-y-auto">
-            {mockNotifications.length > 0 ? (
+            {notifications.length > 0 ? (
               <div className="space-y-4 py-2">
-                {mockNotifications.map((notification) => (
+                {notifications.map((notification) => (
                   <div 
-                    key={notification.id} 
-                    className={`p-3 rounded-lg border ${!notification.read ? 'bg-gray-100 dark:bg-gray-800 border-blue-200 dark:border-blue-800' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900'}`}
+                    key={notification._id} 
+                    onClick={() => handleNotificationClick(notification._id)}
+                    className={`p-3 rounded-lg border cursor-pointer ${!notification.seen ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900'}`}
                   >
-                    <div className="flex justify-between">
-                      <h4 className="font-medium text-gray-900 dark:text-white">{notification.sender}</h4>
-                      <span className="text-xs text-gray-600 dark:text-gray-400">{notification.time}</span>
-                    </div>
-                    <p className="text-sm mt-1 text-gray-700 dark:text-gray-300">{notification.content}</p>
-                    {!notification.read && (
-                      <div className="mt-2 flex justify-end">
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => {
-                            toast.success("Marked as read");
-                          }}
-                        >
-                          Mark as read
-                        </Button>
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <p className="text-sm text-gray-900 dark:text-white">{notification.message}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          {formatTime(notification.createdAt)}
+                        </p>
                       </div>
-                    )}
+                      {!notification.seen && (
+                        <span className="h-2 w-2 bg-blue-500 rounded-full mt-1"></span>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
