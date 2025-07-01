@@ -93,7 +93,7 @@ Student-Nest-Mobile/
    ```
 
 4. **Open the app:**
-   - Visit [http://localhost:5173](http://localhost:8080) in your browser.
+   - Visit [http://localhost:8080](http://localhost:8080) in your browser.
    - For mobile/PWA: Use Capacitor to run on iOS/Android (see Capacitor docs).
 
 ---
